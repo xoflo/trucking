@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "435469706152",
+    "project_id": "trucking-84f58",
+    "storage_bucket": "trucking-84f58.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:435469706152:android:5c6744e64e5adbf77c739d",
+        "android_client_info": {
+          "package_name": "com.example.trucking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPX-4f7qDp7XRvrVU-aXs9zXmdQCGPtEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
