@@ -125,6 +125,9 @@ class _DriverScreenState extends State<DriverScreen> {
                             },
                             title: Text(driver.get('name')),
                             subtitle: Text("${driver.get('contact')} | ${driver.get('address')}"),
+                            trailing: IconButton(onPressed: () {
+                              deletePrompt(driver);
+                            }, icon: Icon(Icons.remove)),
                           );
                         })
                 : Center(
@@ -138,5 +141,27 @@ class _DriverScreenState extends State<DriverScreen> {
                   );
           }),
     );
+  }
+
+  deletePrompt(QueryDocumentSnapshot<Map<String, dynamic>> driver) {
+    showDialog(context: context, builder: (_) => AlertDialog(
+      title: Text("Delete Driver?"),
+      content: Container(
+        height: 20,
+        width: 100,
+        child: Text("Driver will be lost forever."),
+      ),
+      actions: [
+        TextButton(onPressed: () async {
+          try {
+            await driver.reference.delete();
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Driver Deleted")));
+          } catch(e) {
+            print(e);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something Went Wrong")));
+          }
+        }, child: Text("Confirm Delete", style: TextStyle(color: Colors.red)))
+      ],
+    ));
   }
 }

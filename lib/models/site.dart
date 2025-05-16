@@ -6,8 +6,9 @@ class Site {
   String? address;
   String? type;
 
+  Site(this.name, this.address, this.type);
+
   addToFirebase(DocumentReference<Map<String, dynamic>> userAccount) async {
-    final users = FirebaseFirestore.instance.collection('users');
 
     await userAccount
         .collection('sites')
@@ -15,6 +16,7 @@ class Site {
 
     return 1;
   }
+
 
   fromFirebase(dynamic data) {
     this.name = data['name'];

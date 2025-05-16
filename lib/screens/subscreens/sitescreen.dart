@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:trucking/models/site.dart';
 
 class SiteScreen extends StatefulWidget {
   const SiteScreen({super.key, required this.userAccount});
@@ -15,8 +16,11 @@ class _SiteScreenState extends State<SiteScreen> {
 
   TextEditingController siteName = TextEditingController();
   TextEditingController siteAddress = TextEditingController();
+  String siteTypeName = "Mining";
 
-  TextEditingController siteTypeName = TextEditingController();
+
+  TextEditingController siteTypeNameAdd = TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +96,7 @@ class _SiteScreenState extends State<SiteScreen> {
                           child: GestureDetector(
                             onTap: () {
                               type = 1;
+                              siteTypeName = 'Hustling';
                               setState(() {
 
                               });
@@ -107,6 +112,7 @@ class _SiteScreenState extends State<SiteScreen> {
                           child: GestureDetector(
                             onTap: () {
                               type = 2;
+                              siteTypeName = 'Mining';
                               setState(() {
 
                               });
@@ -161,16 +167,37 @@ class _SiteScreenState extends State<SiteScreen> {
           ),
           actions: [
             IconButton(
-                icon: Icon(Icons.check_circle),
+                icon: Icon(
+                    color: Colors.orange,
+                    Icons.check_circle),
                 onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Site Added")));
-
+                  siteToFirebase();
                 })
           ],
         );
       },
     );
+  }
+
+  siteToFirebase() async {
+    final result = await Site(siteName.text, siteAddress.text, siteTypeName).addToFirebase(widget.userAccount);
+
+    if (result == 1) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Site Added")));
+      clearSiteFields();
+    } else {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something Went Wrong")));
+      clearSiteFields();
+    }
+
+  }
+  
+  clearSiteFields() {
+    siteName.clear();
+    siteAddress.clear();
+    siteTypeName = "";
   }
 
   siteTypeDialog() {
@@ -191,7 +218,7 @@ class _SiteScreenState extends State<SiteScreen> {
                         height: 60,
                         width: 350,
                         child: TextField(
-                          controller: siteTypeName,
+                          controller: siteTypeNameAdd,
                           decoration: InputDecoration(
                               hintText: 'Type Name to Add'
                           ),
@@ -251,25 +278,62 @@ class _SiteScreenState extends State<SiteScreen> {
   }
 
   siteListView() {
-    int i = 1;
-
     return Container(
       padding: EdgeInsets.fromLTRB(30, 20, 30, 0),
       height: 600,
-      child: StreamBuilder(stream: null, builder: (context, snapshot) {
-        return i == 1 ? Center(
+      child: StreamBuilder(stream: widget.userAccount.collection('sites').snapshots(), builder: (context, snapshot) {
+        return snapshot.connectionState == ConnectionState.active ?
+            snapshot.data!.docs.length == 0 ?
+        Center(
           child: Text("No Sites Found", style: TextStyle(color: Colors.grey)),
         ) : ListView.builder(
-            itemCount: 2,
+            itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, i) {
+              
+              final site = snapshot.data!.docs[i];
+              
               return ListTile(
                 onTap: () {
-
+                  
                 },
-                title: Text("Site"),
+                title: Text(site.get('name')),
+                subtitle: Text("${site.get('type')} | ${site.get('address')}"),
+                trailing: IconButton(onPressed: () async {
+                  deletePrompt(site);
+                }, icon: Icon(Icons.remove)),
               );
-            });
+            }) : Center(
+          child: Container(
+            height: 100,
+            width: 100,
+            child: CircularProgressIndicator(
+              color: Colors.orange,
+            ),
+          ),
+        );
       }),
     );
+  }
+
+  deletePrompt(QueryDocumentSnapshot<Map<String, dynamic>> site) {
+    showDialog(context: context, builder: (_) => AlertDialog(
+      title: Text("Delete Site?"),
+      content: Container(
+        height: 20,
+        width: 100,
+        child: Text("Site will be lost forever."),
+      ),
+      actions: [
+        TextButton(onPressed: () async {
+          try {
+            await site.reference.delete();
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Site Deleted")));
+          } catch(e) {
+            print(e);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something Went Wrong")));
+          }
+        }, child: Text("Confirm Delete", style: TextStyle(color: Colors.red)))
+      ],
+    ));
   }
 }
