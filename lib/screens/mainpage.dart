@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trucking/screens/subscreens/homescreen.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -19,7 +20,8 @@ class _MainPageState extends State<MainPage> {
         child: Column(
           children: <Widget>[
             titlebar(),
-            Divider()
+            Divider(),
+            screenHandler(screenNumber)
           ],
         ),
       ),
@@ -34,9 +36,23 @@ class _MainPageState extends State<MainPage> {
           child: Text("Trip Ticket Tracker", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30)),
         ),
         Spacer(),
-        titleNavigator()
+        titleNavigator(),
       ],
     );
+  }
+
+  screenHandler(int type) {
+    if (type == 1) {
+      return HomeScreen();
+    }
+
+    if (type == 2) {
+      return Container();
+    }
+
+    if (type == 3) {
+      return Container();
+    }
   }
 
   titleNavigator() {
