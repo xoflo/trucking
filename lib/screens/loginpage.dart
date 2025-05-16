@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trucking/screens/mainpage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -10,6 +11,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   bool seePassword = true;
   TextEditingController username = TextEditingController();
@@ -100,9 +103,52 @@ class _LoginPageState extends State<LoginPage> {
     return Padding(
       padding: const EdgeInsets.all(25.0),
       child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => MainPage()));
+          onPressed: () async {
+            final result = await verifyFirebase();
+
+            if (result == true) {
+
+
+              final users = FirebaseFirestore.instance.collection('users');
+
+              final userAccount = await users.where('username', isEqualTo: username.text).where('password', isEqualTo: password.text).snapshots().first.then((value){
+                final accountRef = users.doc(value.docs[0].id);
+                return accountRef;
+              });
+
+              Navigator.push(context, MaterialPageRoute(builder: (_) => MainPage(userAccount: userAccount)));
+            }
+
+            if (result == false) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Invalid Account")));
+            }
+
+            if (result == 1) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something Went Wrong")));
+            }
+
           }, child: Text("Sign-in")),
     );
+  }
+
+  verifyFirebase() async {
+
+    try {
+
+      final users = await firestore.collection('users').where('username', isEqualTo: username.text).where('password', isEqualTo: password.text).snapshots().first;
+      final result = users.docs.length;
+
+      if (result > 0) {
+        return true;
+      }
+
+      if (result == 0) {
+        return false;
+      }
+
+    } catch(e) {
+      print(e);
+    }
+
   }
 }

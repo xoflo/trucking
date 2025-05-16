@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.userAccount});
+
+  final DocumentReference<Map<String, dynamic>> userAccount;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class SiteScreen extends StatefulWidget {
-  const SiteScreen({super.key});
+  const SiteScreen({super.key, required this.userAccount});
+
+  final DocumentReference<Map<String, dynamic>> userAccount;
 
   @override
   State<SiteScreen> createState() => _SiteScreenState();

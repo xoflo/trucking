@@ -1,10 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:trucking/screens/subscreens/driverscreen.dart';
 import 'package:trucking/screens/subscreens/homescreen.dart';
 import 'package:trucking/screens/subscreens/sitescreen.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({super.key, required this.userAccount});
+
+  final DocumentReference<Map<String, dynamic>> userAccount;
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -64,15 +67,15 @@ class _MainPageState extends State<MainPage> {
 
   screenHandler(int type) {
     if (type == 1) {
-      return HomeScreen();
+      return HomeScreen(userAccount: widget.userAccount);
     }
 
     if (type == 2) {
-      return DriverScreen();
+      return DriverScreen(userAccount: widget.userAccount);
     }
 
     if (type == 3) {
-      return SiteScreen();
+      return SiteScreen(userAccount: widget.userAccount);
     }
   }
 
