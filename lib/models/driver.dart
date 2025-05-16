@@ -18,7 +18,7 @@ class Driver {
     return "1";
   }
 
-  fromFirebase(dynamic data) {
+  Driver.fromFirebase(QueryDocumentSnapshot<Map<String, dynamic>> data) {
     this.name = data.get('name');
     this.contact = data.get('contact');
     this.address = data.get('address');

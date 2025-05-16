@@ -18,9 +18,9 @@ class Site {
   }
 
 
-  fromFirebase(dynamic data) {
-    this.name = data['name'];
-    this.address = data['address'];
-    this.type = data['type'];
+  Site.fromFirebase(QueryDocumentSnapshot<Map<String, dynamic>> data) {
+    this.name = data.get('name');
+    this.address = data.get('address');
+    this.type = data.get('type');
   }
 }
