@@ -19,7 +19,7 @@ class _MainPageState extends State<MainPage> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: <Widget>[
-            titlebar(),
+            titleBar(),
             Divider(),
             screenHandler(screenNumber)
           ],
@@ -28,17 +28,36 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  titlebar() {
+  titleBar() {
     return Row(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Text("Trip Ticket Tracker", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30)),
+        Container(
+          width: 130,
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Text(titleHandler(), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30)),
+          ),
         ),
+        Spacer(),
+        Text("Trip Ticket Tracker", style: TextStyle(fontSize: 20)),
         Spacer(),
         titleNavigator(),
       ],
     );
+  }
+
+  titleHandler() {
+    if (screenNumber == 1) {
+      return "Home";
+    }
+
+    if (screenNumber == 2) {
+      return "Drivers";
+    }
+
+    if (screenNumber == 3) {
+      return "Sites";
+    }
   }
 
   screenHandler(int type) {
