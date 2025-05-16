@@ -13,6 +13,8 @@ class _SiteScreenState extends State<SiteScreen> {
   TextEditingController siteName = TextEditingController();
   TextEditingController siteAddress = TextEditingController();
 
+  TextEditingController siteTypeName = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -53,7 +55,7 @@ class _SiteScreenState extends State<SiteScreen> {
         return AlertDialog(
           title: Text("Add Site"),
           content: Container(
-            height: 300,
+            height: 320,
             width: 400,
             child: Padding(
               padding: EdgeInsets.all(15.0),
@@ -118,9 +120,37 @@ class _SiteScreenState extends State<SiteScreen> {
                     alignment: Alignment.centerLeft,
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(0, 15, 0, 10),
-                      child: Text("Other Site Types:"),
+                      child: Text("Added Site Types:"),
                     ),
                   ),
+
+                  StreamBuilder(stream: null, builder: (context, snapshot) {
+
+                    int i = 2;
+
+                    return Container(
+                      height: 50,
+                      width: 250,
+                      child: i == 1 ? ListView.builder(itemBuilder: (context, i) {
+                        return  Container(
+                          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                            height: 50,
+                            width: 100,
+                            child: GestureDetector(
+                              onTap: () {
+
+                              },
+                              child: Card(
+                                child: Center(child: Text("Hustling", style: TextStyle(color: Colors.white))),
+                                color: siteTypeColorHandler(1, type),
+                              ),
+                            ));
+                      }) : Center(
+                        child: Text("No Added Types"),
+                      ),
+                    );
+                  }),
+
 
                 ],
               ),
@@ -143,23 +173,59 @@ class _SiteScreenState extends State<SiteScreen> {
   siteTypeDialog() {
     int i = 2;
 
-    return AlertDialog(
-      title: Text("Site Types"),
-      content: Container(
-        height: 400,
-        width: 400,
-        child: StreamBuilder(stream: null, builder: (context, snapshot) {
-          return i == 1 ? ListView.builder(
-              itemCount: 1,
-              itemBuilder: (context, i) {
-                return ListTile(
-                  title: Text("test"),
-                );
-              }) : Center(
-            child: Text("No Added Site Types", style: TextStyle(color: Colors.grey)),
-          );
-        }),
-      ),
+    return StatefulBuilder(
+      builder: (BuildContext context, void Function(void Function()) setState) {
+        return AlertDialog(
+          title: Text("Site Types"),
+          content: Container(
+            height: 400,
+            width: 400,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                        height: 60,
+                        width: 350,
+                        child: TextField(
+                          controller: siteTypeName,
+                          decoration: InputDecoration(
+                              hintText: 'Type Name to Add'
+                          ),
+                        )),
+                    IconButton(onPressed: () {
+
+                      setState(() {
+
+                      });
+                    }, icon: Icon(
+                        color: Colors.orange,
+                        Icons.add_circle_outlined))
+                  ],
+                ),
+
+                Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text("Site Types:")),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: StreamBuilder(stream: null, builder: (context, snapshot) {
+                    return i == 1 ? ListView.builder(
+                        itemCount: 1,
+                        itemBuilder: (context, i) {
+                          return ListTile(
+                            title: Text("test"),
+                          );
+                        }) : Center(
+                      child: Text("No Added Site Types", style: TextStyle(color: Colors.grey)),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
     );
   }
   

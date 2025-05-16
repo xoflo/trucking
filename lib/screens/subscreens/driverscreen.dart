@@ -42,7 +42,7 @@ class _DriverScreenState extends State<DriverScreen> {
     return AlertDialog(
       title: Text("Add Driver"),
       content: Container(
-        height: 300,
+        height: 200,
         width: 400,
         child: Padding(
           padding: EdgeInsets.all(15.0),
@@ -72,7 +72,9 @@ class _DriverScreenState extends State<DriverScreen> {
       ),
       actions: [
         IconButton(
-            icon: Icon(Icons.check_circle),
+            icon: Icon(
+                color: Colors.orange,
+                Icons.check_circle),
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Driver Added")));
