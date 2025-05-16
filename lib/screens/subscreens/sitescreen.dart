@@ -79,44 +79,49 @@ class _SiteScreenState extends State<SiteScreen> {
                       child: Text("Site Type:"),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                    child: Row(
-                      children: [
-                        Container(
-                            height: 50,
-                            width: 100,
-                            child: GestureDetector(
-                              onTap: () {
-                                type = 1;
-                                setState(() {
+                  Row(
+                    children: [
+                      Container(
+                          height: 50,
+                          width: 100,
+                          child: GestureDetector(
+                            onTap: () {
+                              type = 1;
+                              setState(() {
 
-                                });
-                              },
-                              child: Card(
-                                child: Center(child: Text("Hustling", style: TextStyle(color: Colors.white))),
-                                color: siteTypeColorHandler(1, type),
-                              ),
-                            )),
-                        Container(
-                            height: 50,
-                            width: 100,
-                            child: GestureDetector(
-                              onTap: () {
-                                type = 2;
-                                setState(() {
+                              });
+                            },
+                            child: Card(
+                              child: Center(child: Text("Hustling", style: TextStyle(color: Colors.white))),
+                              color: siteTypeColorHandler(1, type),
+                            ),
+                          )),
+                      Container(
+                          height: 50,
+                          width: 100,
+                          child: GestureDetector(
+                            onTap: () {
+                              type = 2;
+                              setState(() {
 
-                                });
-                              },
-                              child: Card(
-                                child: Center(child: Text("Mining", style: TextStyle(color: Colors.white))),
-                                color: siteTypeColorHandler(2, type),
-                              ),
-                            )),
+                              });
+                            },
+                            child: Card(
+                              child: Center(child: Text("Mining", style: TextStyle(color: Colors.white))),
+                              color: siteTypeColorHandler(2, type),
+                            ),
+                          )),
 
-                      ],
+                    ],
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(0, 15, 0, 10),
+                      child: Text("Other Site Types:"),
                     ),
                   ),
+
                 ],
               ),
             ),
@@ -136,10 +141,24 @@ class _SiteScreenState extends State<SiteScreen> {
   }
 
   siteTypeDialog() {
+    int i = 2;
+
     return AlertDialog(
+      title: Text("Site Types"),
       content: Container(
-        height: 300,
+        height: 400,
         width: 400,
+        child: StreamBuilder(stream: null, builder: (context, snapshot) {
+          return i == 1 ? ListView.builder(
+              itemCount: 1,
+              itemBuilder: (context, i) {
+                return ListTile(
+                  title: Text("test"),
+                );
+              }) : Center(
+            child: Text("No Added Site Types", style: TextStyle(color: Colors.grey)),
+          );
+        }),
       ),
     );
   }
