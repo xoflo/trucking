@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:trucking/screens/subscreens/driverscreen.dart';
 import 'package:trucking/screens/subscreens/homescreen.dart';
+import 'package:trucking/screens/subscreens/sitescreen.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -66,11 +68,11 @@ class _MainPageState extends State<MainPage> {
     }
 
     if (type == 2) {
-      return Container();
+      return DriverScreen();
     }
 
     if (type == 3) {
-      return Container();
+      return SiteScreen();
     }
   }
 

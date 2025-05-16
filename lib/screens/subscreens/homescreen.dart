@@ -55,28 +55,51 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Align(
               alignment: Alignment.topLeft,
-              child: Text(dateToString(selectedDate!), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500))
+              child: Row(
+                children: [
+                  Text(dateToString(selectedDate!), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                  addTicketButton()
+                ],
+              )
           ),
-          ticketTiles()
+          ticketListView()
         ],
       ),
     );
   }
 
-  ticketTiles() {
+  addTicketButton() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20,0,0,0),
+      child: ElevatedButton(onPressed: () {
+
+      }, child: Text("+ Trip Ticket")),
+    );
+  }
+
+  ticketListView() {
+    int i = 1;
+
     return Container(
       padding: EdgeInsets.fromLTRB(30, 25, 30, 0),
       height: 300,
-      child: ListView.builder(
-          itemCount: 2,
-          itemBuilder: (context, i) {
-            return ListTile(
-              onTap: () {
+      child: StreamBuilder(
+        stream: null,
+        builder: (context, snapshot) {
+          return i == 1 ? Center(
+            child: Text("No Trip Tickets Found", style: TextStyle(color: Colors.grey)),
+          ) : ListView.builder(
+              itemCount: 2,
+              itemBuilder: (context, i) {
+                return ListTile(
+                  onTap: () {
 
-              },
-              title: Text("Driver"),
-            );
-          }),
+                  },
+                  title: Text("Driver"),
+                );
+              });
+        },
+      ),
     );
   }
 
