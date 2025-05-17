@@ -22,12 +22,15 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: <Widget>[
-            titleBar(),
-            Divider(),
-            screenHandler(screenNumber)
-          ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            children: <Widget>[
+              titleBar(),
+              Divider(),
+              screenHandler(screenNumber)
+            ],
+          ),
         ),
       ),
     );

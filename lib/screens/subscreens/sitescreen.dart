@@ -16,6 +16,7 @@ class _SiteScreenState extends State<SiteScreen> {
 
   TextEditingController siteName = TextEditingController();
   TextEditingController siteAddress = TextEditingController();
+  TextEditingController siteDistance = TextEditingController();
   String siteTypeName = "Mining";
 
 
@@ -24,13 +25,11 @@ class _SiteScreenState extends State<SiteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          addSiteButton(),
-          siteListView()
-        ],
-      ),
+    return Column(
+      children: [
+        addSiteButton(),
+        siteListView()
+      ],
     );
   }
 
@@ -42,46 +41,53 @@ class _SiteScreenState extends State<SiteScreen> {
           child: Row(
             children: [
               ElevatedButton(onPressed: () {
-                showDialog(context: context, builder: (_) => addSiteDialog());
-              }, child: Text("+ Site")),
-              SizedBox(width: 15),
+                showDialog(context: context, builder: (_) => siteDialog(1));
+              }, child: const Text("+ Site")),
+              const SizedBox(width: 15),
               ElevatedButton(onPressed: () {
                 showDialog(context: context, builder: (_) => siteTypeDialog());
-              }, child: Text("+ Site Type")),
+              }, child: const Text("+ Site Type")),
             ],
           )),
     );
   }
 
-  addSiteDialog() {
+  siteDialog(int i, {QueryDocumentSnapshot<Map<String, dynamic>>? site}) {
     
     int type = 1;
     
     return StatefulBuilder(
       builder: (BuildContext context, void Function(void Function()) setState) {
         return AlertDialog(
-          title: Text("Add Site"),
+          title: Text("${i == 2? 'Edit' : 'Add'} Site"),
           content: Container(
-            height: 320,
+            height: 365,
             width: 400,
             child: Padding(
-              padding: EdgeInsets.all(15.0),
+              padding: const EdgeInsets.all(15.0),
               child: Column(
                 children: [
                   TextField(
                     controller: siteName,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         hintText: 'Site Name'
                     ),
                   ),
                   TextField(
                     controller: siteAddress,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         hintText: 'Address'
                     ),
                   ),
 
-                  Align(
+                  TextField(
+                    controller: siteDistance,
+                    decoration: const InputDecoration(
+                        hintText: 'Distance'
+                    ),
+                  ),
+
+                  const Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(0, 15, 0, 10),
@@ -90,7 +96,7 @@ class _SiteScreenState extends State<SiteScreen> {
                   ),
                   Row(
                     children: [
-                      Container(
+                      SizedBox(
                           height: 50,
                           width: 100,
                           child: GestureDetector(
@@ -171,7 +177,11 @@ class _SiteScreenState extends State<SiteScreen> {
                     color: Colors.orange,
                     Icons.check_circle),
                 onPressed: () {
-                  siteToFirebase();
+                  if (i == 2) {
+
+                  } else {
+                    siteToFirebase();
+                  }
                 })
           ],
         );
@@ -238,12 +248,12 @@ class _SiteScreenState extends State<SiteScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text("Site Types:")),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                   child: StreamBuilder(stream: null, builder: (context, snapshot) {
                     return i == 1 ? ListView.builder(
                         itemCount: 1,
                         itemBuilder: (context, i) {
-                          return ListTile(
+                          return const ListTile(
                             title: Text("test"),
                           );
                         }) : Center(
@@ -294,7 +304,7 @@ class _SiteScreenState extends State<SiteScreen> {
               
               return ListTile(
                 onTap: () {
-                  
+                  siteDialog(2);
                 },
                 title: Text(site.get('name')),
                 subtitle: Text("${site.get('type')} | ${site.get('address')}"),
@@ -314,6 +324,7 @@ class _SiteScreenState extends State<SiteScreen> {
       }),
     );
   }
+
 
   deletePrompt(QueryDocumentSnapshot<Map<String, dynamic>> site) {
     showDialog(context: context, builder: (_) => AlertDialog(

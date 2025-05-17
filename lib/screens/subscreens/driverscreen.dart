@@ -15,6 +15,8 @@ class _DriverScreenState extends State<DriverScreen> {
   TextEditingController driverName = TextEditingController();
   TextEditingController driverContact = TextEditingController();
   TextEditingController driverAddress = TextEditingController();
+  TextEditingController regularRate = TextEditingController();
+  TextEditingController incentiveRate = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +44,7 @@ class _DriverScreenState extends State<DriverScreen> {
     return AlertDialog(
       title: Text("Add Driver"),
       content: Container(
-        height: 200,
+        height: 300,
         width: 400,
         child: Padding(
           padding: EdgeInsets.all(15.0),
@@ -59,6 +61,16 @@ class _DriverScreenState extends State<DriverScreen> {
               TextField(
                 controller: driverAddress,
                 decoration: InputDecoration(hintText: 'Address'),
+              ),
+
+              TextField(
+                controller: regularRate,
+                decoration: InputDecoration(hintText: 'Regular Rate'),
+              ),
+
+              TextField(
+                controller: incentiveRate,
+                decoration: InputDecoration(hintText: 'Incentive Rate (PHP per KM)'),
               ),
             ],
           ),
@@ -125,9 +137,22 @@ class _DriverScreenState extends State<DriverScreen> {
                             },
                             title: Text(driver.get('name')),
                             subtitle: Text("${driver.get('contact')} | ${driver.get('address')}"),
-                            trailing: IconButton(onPressed: () {
-                              deletePrompt(driver);
-                            }, icon: Icon(Icons.remove)),
+                            trailing: Container(
+                              width: 80,
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                      tooltip: 'View Report',
+                                      onPressed: () {}, icon: Icon(
+                                      Icons.library_books_outlined)),
+                                  IconButton(
+                                      tooltip: 'Delete',
+                                      onPressed: () {
+                                    deletePrompt(driver);
+                                  }, icon: Icon(Icons.remove)),
+                                ],
+                              ),
+                            ),
                           );
                         })
                 : Center(

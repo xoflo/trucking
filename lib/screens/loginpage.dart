@@ -82,6 +82,10 @@ class _LoginPageState extends State<LoginPage> {
             Container(
                 width: 250,
                 child: TextField(
+                  onSubmitted: (value) async {
+                    final result = await verifyFirebase();
+                    await signIn(result);
+                  },
                     obscureText: seePassword,
                     decoration: InputDecoration(
                         hintText: 'Password'
@@ -105,30 +109,35 @@ class _LoginPageState extends State<LoginPage> {
       child: ElevatedButton(
           onPressed: () async {
             final result = await verifyFirebase();
+            await signIn(result);
 
-            if (result == true) {
-
-
-              final users = FirebaseFirestore.instance.collection('users');
-
-              final userAccount = await users.where('username', isEqualTo: username.text).where('password', isEqualTo: password.text).snapshots().first.then((value){
-                final accountRef = users.doc(value.docs[0].id);
-                return accountRef;
-              });
-
-              Navigator.push(context, MaterialPageRoute(builder: (_) => MainPage(userAccount: userAccount)));
-            }
-
-            if (result == false) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Invalid Account")));
-            }
-
-            if (result == 1) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something Went Wrong")));
-            }
 
           }, child: Text("Sign-in")),
     );
+  }
+
+
+  signIn(dynamic result) async {
+    if (result == true) {
+
+
+      final users = FirebaseFirestore.instance.collection('users');
+
+      final userAccount = await users.where('username', isEqualTo: username.text).where('password', isEqualTo: password.text).snapshots().first.then((value){
+        final accountRef = users.doc(value.docs[0].id);
+        return accountRef;
+      });
+
+      Navigator.push(context, MaterialPageRoute(builder: (_) => MainPage(userAccount: userAccount)));
+    }
+
+    if (result == false) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Invalid Account")));
+    }
+
+    if (result == 1) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something Went Wrong")));
+    }
   }
 
   verifyFirebase() async {
@@ -147,6 +156,7 @@ class _LoginPageState extends State<LoginPage> {
       }
 
     } catch(e) {
+      return 1;
       print(e);
     }
 
