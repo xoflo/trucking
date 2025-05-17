@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:trucking/models/site.dart';
+import 'package:trucking/screens/mainpage.dart';
 
 class SiteScreen extends StatefulWidget {
   const SiteScreen({super.key, required this.userAccount});
@@ -81,9 +82,10 @@ class _SiteScreenState extends State<SiteScreen> {
                   ),
 
                   TextField(
+                    keyboardType: TextInputType.numberWithOptions(),
                     controller: siteDistance,
                     decoration: const InputDecoration(
-                        hintText: 'Distance'
+                        hintText: 'Distance in KM'
                     ),
                   ),
 
@@ -190,7 +192,7 @@ class _SiteScreenState extends State<SiteScreen> {
   }
 
   siteToFirebase() async {
-    final result = await Site(siteName.text, siteAddress.text, siteTypeName).addToFirebase(widget.userAccount);
+    final result = await Site(siteName.text, siteAddress.text, siteTypeName, double.parse(siteDistance.text)).addToFirebase(widget.userAccount);
 
     if (result == 1) {
       Navigator.pop(context);
@@ -312,15 +314,7 @@ class _SiteScreenState extends State<SiteScreen> {
                   deletePrompt(site);
                 }, icon: Icon(Icons.remove)),
               );
-            }) : Center(
-          child: Container(
-            height: 100,
-            width: 100,
-            child: CircularProgressIndicator(
-              color: Colors.orange,
-            ),
-          ),
-        );
+            }) : loadWidget(100);
       }),
     );
   }

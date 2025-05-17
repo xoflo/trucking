@@ -144,3 +144,15 @@ class _MainPageState extends State<MainPage> {
 
   }
 }
+
+loadWidget(double size) {
+  return Center(
+    child: Container(
+      height: size,
+      width: size,
+      child: CircularProgressIndicator(
+        color: Colors.orange,
+      ),
+    ),
+  );
+}

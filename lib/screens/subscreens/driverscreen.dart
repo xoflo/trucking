@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:trucking/models/driver.dart';
+import 'package:trucking/screens/mainpage.dart';
 
 class DriverScreen extends StatefulWidget {
   const DriverScreen({super.key, required this.userAccount});
@@ -64,11 +65,13 @@ class _DriverScreenState extends State<DriverScreen> {
               ),
 
               TextField(
+                keyboardType: TextInputType.numberWithOptions(),
                 controller: regularRate,
                 decoration: InputDecoration(hintText: 'Regular Rate'),
               ),
 
               TextField(
+                keyboardType: TextInputType.numberWithOptions(),
                 controller: incentiveRate,
                 decoration: InputDecoration(hintText: 'Incentive Rate (PHP per KM)'),
               ),
@@ -94,7 +97,7 @@ class _DriverScreenState extends State<DriverScreen> {
 
   addDriverFirebase() async {
     final result =
-        await Driver(driverName.text, driverContact.text, driverAddress.text)
+        await Driver(driverName.text, driverContact.text, driverAddress.text, double.parse(regularRate.text), double.parse(incentiveRate.text))
             .addToFirebase(widget.userAccount);
 
     if (result == "1") {
@@ -137,36 +140,18 @@ class _DriverScreenState extends State<DriverScreen> {
                             },
                             title: Text(driver.get('name')),
                             subtitle: Text("${driver.get('contact')} | ${driver.get('address')}"),
-                            trailing: Container(
-                              width: 80,
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                      tooltip: 'View Report',
-                                      onPressed: () {}, icon: Icon(
-                                      Icons.library_books_outlined)),
-                                  IconButton(
-                                      tooltip: 'Delete',
-                                      onPressed: () {
-                                    deletePrompt(driver);
-                                  }, icon: Icon(Icons.remove)),
-                                ],
-                              ),
-                            ),
+                            trailing: IconButton(
+                                tooltip: 'Delete',
+                                onPressed: () {
+                              deletePrompt(driver);
+                            }, icon: Icon(Icons.remove)),
                           );
                         })
-                : Center(
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      child: CircularProgressIndicator(
-                        color: Colors.orange,
-                      ),
-                    ),
-                  );
+                : loadWidget(100);
           }),
     );
   }
+
 
   deletePrompt(QueryDocumentSnapshot<Map<String, dynamic>> driver) {
     showDialog(context: context, builder: (_) => AlertDialog(

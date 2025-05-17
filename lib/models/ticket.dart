@@ -55,13 +55,13 @@ class Ticket {
     this.mmdc = data.get('mmdc');
     this.date = data.get('date');
     this.loadedBy = data.get('loadedBy');
-    this.timeLoaded = data.get('timeLoaded');
+    this.timeLoaded = data.get('timeLoaded').toDate();
     this.loadChecker = data.get('loadChecker');
     this.loadOperator = data.get('loadOperator');
     this.hauledBy = data.get('hauledBy');
     this.driver = data.get('driver');
     this.receivedBy = data.get('receivedBy');
-    this.timeReceived= data.get('timeReceived');
+    this.timeReceived= data.get('timeReceived').toDate();
     this.receiveOperator = data.get('receiveOperator');
     this.receiveChecker = data.get('receiveChecker');
     this.material = data.get('material');
