@@ -136,7 +136,7 @@ class _DriverScreenState extends State<DriverScreen> {
 
                           return ListTile(
                             onTap: () {
-                              showDialog(context: context, builder: (_) => driverDialog(2));
+                              // showDialog(context: context, builder: (_) => driverDialog(2));
                             },
                             title: Text(driver.get('name')),
                             subtitle: Text("${driver.get('contact')} | ${driver.get('address')}"),
