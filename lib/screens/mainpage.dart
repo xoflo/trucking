@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:trucking/screens/subscreens/driverscreen.dart';
 import 'package:trucking/screens/subscreens/homescreen.dart';
+import 'package:trucking/screens/subscreens/reportscreen.dart';
 import 'package:trucking/screens/subscreens/sitescreen.dart';
 
 class MainPage extends StatefulWidget {
@@ -40,7 +41,7 @@ class _MainPageState extends State<MainPage> {
     return Row(
       children: [
         Container(
-          width: 130,
+          width: 150,
           child: Padding(
             padding: const EdgeInsets.all(5.0),
             child: Text(titleHandler(), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30)),
@@ -66,6 +67,10 @@ class _MainPageState extends State<MainPage> {
     if (screenNumber == 3) {
       return "Sites";
     }
+
+    if (screenNumber == 4) {
+      return "Reports";
+    }
   }
 
   screenHandler(int type) {
@@ -80,6 +85,10 @@ class _MainPageState extends State<MainPage> {
     if (type == 3) {
       return SiteScreen(userAccount: widget.userAccount);
     }
+
+    if (type == 4) {
+      return ReportScreen(userAccount: widget.userAccount);
+    }
   }
 
   titleNavigator() {
@@ -87,7 +96,8 @@ class _MainPageState extends State<MainPage> {
       children: [
         IconButton(onPressed: () => changeScreen(1), icon: Icon(Icons.house, color: titleIconColor(1))),
         IconButton(onPressed: () => changeScreen(2), icon: Icon(Icons.person, color: titleIconColor(2))),
-        IconButton(onPressed: () => changeScreen(3), icon: Icon(Icons.place, color: titleIconColor(3)))
+        IconButton(onPressed: () => changeScreen(3), icon: Icon(Icons.place, color: titleIconColor(3))),
+        IconButton(onPressed: () => changeScreen(4), icon: Icon(Icons.library_books_outlined, color: titleIconColor(4)))
       ],
     );
   }
@@ -107,6 +117,12 @@ class _MainPageState extends State<MainPage> {
 
     if (type == 3) {
       screenNumber = 3;
+      // LocationScreen
+      setState(() {});
+    }
+
+    if (type == 4) {
+      screenNumber = 4;
       // LocationScreen
       setState(() {});
     }
@@ -141,6 +157,13 @@ class _MainPageState extends State<MainPage> {
       }
     }
 
+    if (type == 4) {
+      if (screenNumber == 4) {
+        return selected;
+      } else {
+        return unselected;
+      }
+    }
 
   }
 }

@@ -55,7 +55,8 @@ class _SiteScreenState extends State<SiteScreen> {
 
   siteDialog(int i, {QueryDocumentSnapshot<Map<String, dynamic>>? site}) {
     
-    int type = 1;
+    int type = 0;
+    final siteTypes = widget.userAccount.collection('sitetypes');
     
     return StatefulBuilder(
       builder: (BuildContext context, void Function(void Function()) setState) {
@@ -103,7 +104,7 @@ class _SiteScreenState extends State<SiteScreen> {
                           width: 100,
                           child: GestureDetector(
                             onTap: () {
-                              type = 1;
+                              type = 0;
                               siteTypeName = 'Hustling';
                               setState(() {
 
@@ -111,15 +112,15 @@ class _SiteScreenState extends State<SiteScreen> {
                             },
                             child: Card(
                               child: Center(child: Text("Hustling", style: TextStyle(color: Colors.white))),
-                              color: siteTypeColorHandler(1, type),
+                              color: siteTypeColorHandler(0, type),
                             ),
                           )),
-                      Container(
+                      SizedBox(
                           height: 50,
                           width: 100,
                           child: GestureDetector(
                             onTap: () {
-                              type = 2;
+                              type = 1;
                               siteTypeName = 'Mining';
                               setState(() {
 
@@ -127,7 +128,7 @@ class _SiteScreenState extends State<SiteScreen> {
                             },
                             child: Card(
                               child: Center(child: Text("Mining", style: TextStyle(color: Colors.white))),
-                              color: siteTypeColorHandler(2, type),
+                              color: siteTypeColorHandler(1, type),
                             ),
                           )),
 
@@ -141,30 +142,38 @@ class _SiteScreenState extends State<SiteScreen> {
                     ),
                   ),
 
-                  StreamBuilder(stream: null, builder: (context, snapshot) {
-
-                    int i = 2;
+                  StreamBuilder(stream: siteTypes.snapshots(), builder: (context, snapshot) {
+                    final siteTypesRef = snapshot.data!.docs;
+                    final length = siteTypesRef.length;
 
                     return Container(
                       height: 50,
-                      width: 250,
-                      child: i == 1 ? ListView.builder(itemBuilder: (context, i) {
+                      width: 365,
+                      child: snapshot.connectionState == ConnectionState.active ?  length != 0 ? ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                          itemCount: length,
+                          itemBuilder: (context, i) {
+                        final typeName = siteTypesRef[i].get('name');
+
                         return  Container(
-                          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
                             height: 50,
                             width: 100,
                             child: GestureDetector(
                               onTap: () {
+                                type = i + 2;
+                                siteTypeName = typeName;
+                                setState((){
 
+                                });
                               },
                               child: Card(
-                                child: Center(child: Text("Hustling", style: TextStyle(color: Colors.white))),
-                                color: siteTypeColorHandler(1, type),
+                                child: Center(child: Text(typeName, style: TextStyle(color: Colors.white))),
+                                color: siteTypeColorHandler(i + 2, type),
                               ),
                             ));
                       }) : Center(
-                        child: Text("No Added Types"),
-                      ),
+                        child: Text("No Added Types", style: TextStyle(color: Colors.grey)),
+                      ) : loadWidget(20),
                     );
                   }),
 
@@ -213,7 +222,8 @@ class _SiteScreenState extends State<SiteScreen> {
   }
 
   siteTypeDialog() {
-    int i = 2;
+
+    final siteTypes = widget.userAccount.collection('sitetypes');
 
     return StatefulBuilder(
       builder: (BuildContext context, void Function(void Function()) setState) {
@@ -232,13 +242,15 @@ class _SiteScreenState extends State<SiteScreen> {
                         child: TextField(
                           controller: siteTypeNameAdd,
                           decoration: InputDecoration(
-                              hintText: 'Type Name to Add'
+                              hintText: 'Site Type to Add'
                           ),
                         )),
-                    IconButton(onPressed: () {
-
-                      setState(() {
-
+                    IconButton(onPressed: () async {
+                      await siteTypes.add({
+                        'name': siteTypeNameAdd.text
+                      }).then((value) {
+                        siteTypeNameAdd.clear();
+                        setState(() {});
                       });
                     }, icon: Icon(
                         color: Colors.orange,
@@ -251,17 +263,30 @@ class _SiteScreenState extends State<SiteScreen> {
                     child: Text("Site Types:")),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                  child: StreamBuilder(stream: null, builder: (context, snapshot) {
-                    return i == 1 ? ListView.builder(
-                        itemCount: 1,
-                        itemBuilder: (context, i) {
-                          return const ListTile(
-                            title: Text("test"),
-                          );
-                        }) : Center(
-                      child: Text("No Added Site Types", style: TextStyle(color: Colors.grey)),
-                    );
-                  }),
+                  child: Container(
+                    height: 250,
+                    child: StreamBuilder(stream: siteTypes.snapshots(), builder: (context, snapshot) {
+                      final siteTypesRef = snapshot.data!.docs;
+
+                      return snapshot.connectionState == ConnectionState.active ? siteTypesRef.length != 0 ? ListView.builder(
+                          itemCount: siteTypesRef.length,
+                          itemBuilder: (context, i) {
+                            final type = siteTypesRef[i];
+
+                            return ListTile(
+                              trailing: IconButton(onPressed: () async {
+                                await type.reference.delete();
+                                setState((){
+
+                                });
+                              }, icon: Icon(Icons.remove)),
+                              title: Text(type.get("name")),
+                            );
+                          }) : Center(
+                        child: Text("No Added Site Types", style: TextStyle(color: Colors.grey)),
+                      ) : loadWidget(30);
+                    }),
+                  ),
                 ),
               ],
             ),
@@ -272,20 +297,11 @@ class _SiteScreenState extends State<SiteScreen> {
   }
   
   siteTypeColorHandler(int index, int type) {
-    if (index == 1) {
-      if (type == 1) {
-        return Colors.orange;
-      } else {
-        return Colors.grey;
-      }
-    }
 
-    if (index == 2) {
-      if (type == 2) {
-        return Colors.orange;
-      } else {
-        return Colors.grey;
-      }
+    if (index == type) {
+      return Colors.orange;
+    } else {
+      return Colors.grey;
     }
   }
 
@@ -326,7 +342,7 @@ class _SiteScreenState extends State<SiteScreen> {
       content: Container(
         height: 20,
         width: 100,
-        child: Text("Site will be lost forever."),
+        child: Text("Site will be lost forever. Tickets with this site will not be affected."),
       ),
       actions: [
         TextButton(onPressed: () async {

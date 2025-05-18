@@ -35,13 +35,13 @@ class _DriverScreenState extends State<DriverScreen> {
           alignment: Alignment.centerLeft,
           child: ElevatedButton(
               onPressed: () {
-                showDialog(context: context, builder: (_) => addDriverDialog());
+                showDialog(context: context, builder: (_) => driverDialog(1));
               },
               child: Text("+ Driver"))),
     );
   }
 
-  addDriverDialog() {
+  driverDialog(int i) {
     return AlertDialog(
       title: Text("Add Driver"),
       content: Container(
@@ -136,7 +136,7 @@ class _DriverScreenState extends State<DriverScreen> {
 
                           return ListTile(
                             onTap: () {
-
+                              showDialog(context: context, builder: (_) => driverDialog(2));
                             },
                             title: Text(driver.get('name')),
                             subtitle: Text("${driver.get('contact')} | ${driver.get('address')}"),
@@ -159,7 +159,7 @@ class _DriverScreenState extends State<DriverScreen> {
       content: Container(
         height: 20,
         width: 100,
-        child: Text("Driver will be lost forever."),
+        child: Text("Driver will be lost forever. Tickets with this driver will not be affected."),
       ),
       actions: [
         TextButton(onPressed: () async {

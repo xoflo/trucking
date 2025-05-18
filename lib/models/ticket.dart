@@ -22,9 +22,12 @@ class Ticket {
   String? site;
   String? destination;
 
+  double? driverIncentiveRate;
+  double? siteDistance;
+
   Ticket(this.epdc, this.mmdc, this.date, this.loadedBy, this.timeLoaded, this.loadChecker, this.loadOperator, this.hauledBy,
       this.driver, this.receivedBy, this.timeReceived, this.receiveOperator, this.receiveChecker,
-      this.material, this.activity, this.site, this.destination);
+      this.material, this.activity, this.site, this.destination, {this.driverIncentiveRate, this.siteDistance});
 
   toFirebase(DocumentReference<Map<String, dynamic>> userAccount) async {
     await userAccount.collection('tickets').add({
@@ -45,6 +48,8 @@ class Ticket {
       'activity': this.activity,
       'site': this.site,
       'destination': this.destination,
+      'driverIncentiveRate': this.driverIncentiveRate,
+      'siteDistance': this.siteDistance,
     });
 
     return 1;

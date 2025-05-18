@@ -45,7 +45,12 @@ class _HomeScreenState extends State<HomeScreen> {
     if (selectedDate != null) {
       return ticketsView();
     } else {
-      return Container();
+      return Container(
+        height: 300,
+        child: Center(
+          child: Text("Tap a date to view tickets", style: TextStyle(color: Colors.grey)),
+        ),
+      );
     }
   }
 
@@ -100,6 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
     String driverName = "Select";
     String siteName = "Select";
     String siteActivity = "";
+    double siteDistance = 0;
+    double driverIncentiveRate = 0;
 
     TextEditingController epdc = TextEditingController();
     TextEditingController mmdc = TextEditingController();
@@ -248,8 +255,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       final result = showDialog(
                           context: context,
                           builder: (_) => PopScope(
-                                onPopInvokedWithResult: (bool, value) {
-                                  driverName = value.toString();
+                                onPopInvokedWithResult: (bool, dynamic value) {
+                                  driverName = value.name;
+                                  driverIncentiveRate = value.incentiveRate;
                                   setState(() {});
                                 },
                                 child: AlertDialog(
@@ -279,8 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           onTap: () {
                                                             Navigator.pop(
                                                                 context,
-                                                                driver.get(
-                                                                    'name'));
+                                                                Driver.fromFirebase(driver));
                                                           },
                                                         );
                                                       }),
@@ -379,6 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                   siteName = "${value.name}";
                                   siteActivity = "${value.type}";
+                                  siteDistance = value.distance;
                                   setState(() {});
                                 },
                                 child: AlertDialog(
@@ -472,16 +480,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     material.text,
                     siteActivity,
                     siteName,
-                    destination.text)
+                    destination.text,
+                    driverIncentiveRate: driverIncentiveRate,
+                    siteDistance: siteDistance
+                )
                     .toFirebase(widget.userAccount);
 
                 if (result == 1) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text("Ticket Recorded")));
+                  if (batchTicket == true) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text("Ticket Recorded")));
+                    batchTicketClear();
+                  } else {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text("Ticket Recorded")));
+                    clearTicketFields();
+                    Navigator.pop(context);
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Something Went Wrong")));
                 }
+
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Complete Fields")));
               }
@@ -532,6 +552,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 showTicketReport(datedRef, drivers[i], date);
                               },
                               title: Text(drivers[i]),
+                              subtitle: Text("Trip Tickets: ${snapshot.data!.docs.where((e) => e.get('driver') == drivers[i]).toList().length}"),
                             );
                           });
                     })
