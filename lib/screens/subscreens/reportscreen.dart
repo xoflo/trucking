@@ -21,7 +21,7 @@ class _ReportScreenState extends State<ReportScreen> {
   String displayDate = "Select";
   String displayDriver = "Select";
   String displaySite = "Select";
-  String displayType = "Select";
+  String displayType = "All";
 
   List<DateTime> selectedDates = [DateTime(2025)];
   List<String> driversFilter = [];
@@ -234,6 +234,8 @@ class _ReportScreenState extends State<ReportScreen> {
                     typesFilter.forEach((e) {
                       sites.addAll(snapshot.data!.docs.where((x) => x.get('type').toString().toUpperCase() == e.toString().toUpperCase()));
                     });
+                  } else {
+                    sites = snapshot.data!.docs;
                   }
 
                   return AlertDialog(
