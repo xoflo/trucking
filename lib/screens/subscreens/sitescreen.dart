@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:trucking/models/site.dart';
@@ -54,8 +56,9 @@ class _SiteScreenState extends State<SiteScreen> {
   }
 
   siteDialog(int i, {QueryDocumentSnapshot<Map<String, dynamic>>? site}) {
-    
+
     int type = 0;
+    String displayType = "Select";
     final siteTypes = widget.userAccount.collection('sitetypes');
     
     return StatefulBuilder(
@@ -63,7 +66,7 @@ class _SiteScreenState extends State<SiteScreen> {
         return AlertDialog(
           title: Text("${i == 2? 'Edit' : 'Add'} Site"),
           content: Container(
-            height: 365,
+            height: 300,
             width: 400,
             child: Padding(
               padding: const EdgeInsets.all(15.0),
@@ -90,55 +93,11 @@ class _SiteScreenState extends State<SiteScreen> {
                     ),
                   ),
 
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(0, 15, 0, 10),
-                      child: Text("Site Type:"),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(
-                          height: 50,
-                          width: 100,
-                          child: GestureDetector(
-                            onTap: () {
-                              type = 0;
-                              siteTypeName = 'Hustling';
-                              setState(() {
-
-                              });
-                            },
-                            child: Card(
-                              child: Center(child: Text("Hustling", style: TextStyle(color: Colors.white))),
-                              color: siteTypeColorHandler(0, type),
-                            ),
-                          )),
-                      SizedBox(
-                          height: 50,
-                          width: 100,
-                          child: GestureDetector(
-                            onTap: () {
-                              type = 1;
-                              siteTypeName = 'Mining';
-                              setState(() {
-
-                              });
-                            },
-                            child: Card(
-                              child: Center(child: Text("Mining", style: TextStyle(color: Colors.white))),
-                              color: siteTypeColorHandler(1, type),
-                            ),
-                          )),
-
-                    ],
-                  ),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(0, 15, 0, 10),
-                      child: Text("Added Site Types:"),
+                      child: Text("Site Type: $displayType"),
                     ),
                   ),
 
@@ -160,7 +119,8 @@ class _SiteScreenState extends State<SiteScreen> {
                             width: 100,
                             child: GestureDetector(
                               onTap: () {
-                                type = i + 2;
+                                type = i;
+                                displayType = typeName;
                                 siteTypeName = typeName;
                                 setState((){
 
@@ -168,11 +128,11 @@ class _SiteScreenState extends State<SiteScreen> {
                               },
                               child: Card(
                                 child: Center(child: Text(typeName, style: TextStyle(color: Colors.white))),
-                                color: siteTypeColorHandler(i + 2, type),
+                                color: siteTypeColorHandler(i, type),
                               ),
                             ));
                       }) : Center(
-                        child: Text("No Added Types", style: TextStyle(color: Colors.grey)),
+                        child: Text("No Site types", style: TextStyle(color: Colors.grey)),
                       ) : loadWidget(20),
                     );
                   }),
@@ -246,12 +206,14 @@ class _SiteScreenState extends State<SiteScreen> {
                           ),
                         )),
                     IconButton(onPressed: () async {
-                      await siteTypes.add({
-                        'name': siteTypeNameAdd.text
-                      }).then((value) {
-                        siteTypeNameAdd.clear();
-                        setState(() {});
-                      });
+                      if (siteTypeNameAdd.text != "") {
+                        await siteTypes.add({
+                          'name': siteTypeNameAdd.text
+                        }).then((value) {
+                          siteTypeNameAdd.clear();
+                          setState(() {});
+                        });
+                      }
                     }, icon: Icon(
                         color: Colors.orange,
                         Icons.add_circle_outlined))

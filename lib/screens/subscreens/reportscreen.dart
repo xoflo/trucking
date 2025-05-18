@@ -305,6 +305,7 @@ class _ReportScreenState extends State<ReportScreen> {
                                           },
                                         ),
                                         actions: [
+
                                           TextButton(onPressed: () {
                                           if (typesFilter.isNotEmpty) {
                                             displayType = "${typesFilter.length == 1 ? typesFilter[0] : "${typesFilter.length} Selected"}";
@@ -312,6 +313,13 @@ class _ReportScreenState extends State<ReportScreen> {
                                             setStateDialog((){
 
                                             });
+                                          } else {
+                                            displayType = "All";
+                                            Navigator.pop(context);
+                                            setStateDialog((){
+
+                                            });
+
                                           }
                                         }, child: Text("Confirm"))],
                                       ));

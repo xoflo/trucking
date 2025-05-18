@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:trucking/screens/loginpage.dart';
@@ -18,6 +20,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scrollBehavior: ScrollConfiguration.of(context).copyWith(dragDevices: {
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.touch
+      }),
       debugShowCheckedModeBanner: false,
       title: 'trucking',
       theme: ThemeData(
