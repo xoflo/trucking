@@ -28,41 +28,71 @@ class _ReportScreenState extends State<ReportScreen> {
   List<String> sitesFilter = [];
   List<String> typesFilter = [];
 
+  List<String> displaySortBy = ["Driver", "Site", "Date"];
+  int displaySortByIndex = 0;
+
   @override
   Widget build(BuildContext context) {
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Row(
-            spacing: 10,
-            children: [
-              dateSelectButton(),
-            driverSelectButton(),
-            siteSelectButton(),
-              filter()
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                spacing: 10,
+                children: [
+                  dateSelectButton(),
+                driverSelectButton(),
+                siteSelectButton(),
 
-            ]),
-        ),
+                  StatefulBuilder(
+                    builder: (context, setState) {
+                      return TextButton(onPressed: () {
+                        if (displaySortByIndex == displaySortBy.length - 1) {
+                          displaySortByIndex = 0;
+                        } else {
+                          displaySortByIndex += 1;
+                        }
+                        setState((){});
+                      }, child: Text("Sort by: ${displaySortBy[displaySortByIndex]}"));
+                    },
+                  ),
+                  filter()
 
-        resultsView()
+                ]),
+            ),
+          ),
 
-      ],
+          resultsView()
+
+        ],
+      ),
     );
-  }
-
-  condition() {
-    return displayDate != "Select" && displaySite != "Select" && displayDriver != "Select";
   }
 
   resultsView() {
     return Container(
       height: 400,
-      child: condition() == true ? Container() : Center(
+      child: condition() == true ? StreamBuilder(
+        stream: null,
+        child: Container(
+          child: ListView.builder(itemBuilder: (context, i) {
+            return ListTile();
+          }),
+        ),
+      ) : Center(
         child: Text("Complete Filter Values", style: TextStyle(color: Colors.grey)),
       ),
     );
+  }
+
+  condition() {
+    return displayDate != "Select" && displaySite != "Select" && displayDriver != "Select";
   }
 
   dateSelectButton() {
@@ -99,7 +129,7 @@ class _ReportScreenState extends State<ReportScreen> {
           ));
 
 
-        }, child: Text("Filter Date: $displayDate"));
+        }, child: Text("${MediaQuery.of(context).size.width < 700 ? "$displayDate" : "Filter Date: $displayDate"} "));
       },
 
 
@@ -131,6 +161,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     title: Text("Filter Driver"),
                     content: Container(
                       height: 550,
+                      width: 400,
                       child: Column(
                         children: [
                           Container(
@@ -242,6 +273,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     title: Text("Filter Site"),
                     content: Container(
                       height: 550,
+                      width: 400,
                       child: Column(
                         children: [
                           Container(
@@ -251,7 +283,7 @@ class _ReportScreenState extends State<ReportScreen> {
                               spacing: 10,
                               children: [
                                 Container(
-                                  width: 250,
+                                  width: 180,
                                   child: TextField(
                                     controller: siteSearch,
                                     decoration: InputDecoration(
@@ -373,7 +405,7 @@ class _ReportScreenState extends State<ReportScreen> {
                       }, child: Text("Select All")),
                       TextButton(onPressed: () {
                         if (sitesFilter.isNotEmpty) {
-                          displaySite = '${sitesFilter.length} Selected';
+                          displaySite = '${sitesFilter.length == 1 ? sitesFilter[0] : "${sitesFilter.length} Selected"}';
                           Navigator.pop(context);
                           setStateButton((){
                           });

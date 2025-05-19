@@ -48,7 +48,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         Spacer(),
-        Text("Trip Ticket Tracker", style: TextStyle(fontSize: 20)),
+        MediaQuery.of(context).size.width < 700 ? Container() : Text("Trip Ticket Tracker", style: TextStyle(fontSize: 20)),
         Spacer(),
         titleNavigator(),
       ],
