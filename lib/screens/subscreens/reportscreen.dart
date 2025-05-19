@@ -93,37 +93,57 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
+  sortResults(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
+
+    final realDocs = docs;
+    List<QueryDocumentSnapshot<dynamic>> newResultDrive = [];
+    List<QueryDocumentSnapshot<dynamic>> newResultSite = [];
+
+    for (int i = 0; i < driversFilter.length; i++) {
+      newResultDrive.addAll(docs.where((e) => e.get('driver') == driversFilter[i]).toList());
+    }
+
+    for (int i = 0; i < sitesFilter.length; i++) {
+      newResultSite.addAll(newResultDrive.where((e) => e.get('site') == sitesFilter[i]).toList());
+    }
+
+    return newResultSite.toSet().toList();;
+
+  }
+
   resultsView() {
     try {
       return Container(
         height: 400,
         child: condition() == true ? StreamBuilder(
           stream: widget.userAccount.collection('tickets')
-              .where('driver', isEqualTo: driversFilter[0])
-              .where('site', whereIn: sitesFilter)
               .where('timeLoaded', isGreaterThan: timestampLoad)
               .where('timeLoaded', isLessThan: timestampReceive).snapshots(),
-
-            /*
-
-              .where('driver', isEqualTo: driversFilter)
-              .where('site', whereIn: sitesFilter).snapshots(),
-             */
           builder: (context, snapshot) {
-            return snapshot.connectionState == ConnectionState.active ?  snapshot.data!.docs.length != 0  ? ListView.builder(
-                itemCount:  snapshot.data!.docs.length,
-                itemBuilder: (context, i) {
-                  final ticket =  snapshot.data!.docs[i];
+            return snapshot.connectionState == ConnectionState.active ?  FutureBuilder(
+              future: sortResults(snapshot.data!.docs),
+              builder: (BuildContext context, AsyncSnapshot<List<QueryDocumentSnapshot>> snapshot) {
+                return snapshot.connectionState == ConnectionState.done ? ListView.builder(
+                    itemCount:  snapshot.data!.length,
+                    itemBuilder: (context, i) {
+                      final ticket =  snapshot.data![i];
 
-                  return ListTile(
-                    title: Text(ticket.get(displaySortBy[displaySortByIndex].toLowerCase())),
-                    onTap: () {
-
-                    },
-                  );
-                }) : Center(
+                      return ListTile(
+                        title: Text(ticket.get(displaySortBy[displaySortByIndex].toLowerCase())),
+                        onTap: () {
+                          showDialog(context: context, builder: (_) => AlertDialog(
+                            content: Container(
+                              height: 400,
+                              width: 400,
+                            ),
+                          ));
+                        },
+                      );
+                    }): loadWidget(100);
+              },
+            ) : Center(
               child: Text("No results found", style: TextStyle(color: Colors.grey)),
-            ) : loadWidget(100);
+            );
           }
         ) : Center(
           child: Text("Complete Filter Values", style: TextStyle(color: Colors.grey)),
