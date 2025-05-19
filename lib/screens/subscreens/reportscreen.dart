@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trucking/screens/mainpage.dart';
+import 'package:async/async.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key, required this.userAccount});
@@ -23,7 +24,9 @@ class _ReportScreenState extends State<ReportScreen> {
   String displaySite = "Select";
   String displayType = "All";
 
-  List<DateTime> selectedDates = [DateTime(2025)];
+
+  List<DateTime> datesFilterAsDate = [DateTime(2025)];
+  List<String> datesFilter = [];
   List<String> driversFilter = [];
   List<String> sitesFilter = [];
   List<String> typesFilter = [];
@@ -76,19 +79,54 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   resultsView() {
-    return Container(
-      height: 400,
-      child: condition() == true ? StreamBuilder(
-        stream: null,
-        child: Container(
-          child: ListView.builder(itemBuilder: (context, i) {
-            return ListTile();
-          }),
+    try {
+
+      final timestampLoad = Timestamp.fromDate(datesFilterAsDate[0]);
+      final timestampReceive = datesFilter.length == 2 ? Timestamp.fromDate(datesFilterAsDate[1]) : Timestamp.fromDate(datesFilterAsDate[0].add(Duration(days: 1)));
+
+      print(timestampLoad);
+      print(timestampReceive);
+      print(sitesFilter);
+      print(driversFilter);
+      return Container(
+        height: 400,
+        child: condition() == true ? StreamBuilder(
+          stream: widget.userAccount.collection('tickets')
+              .where('timeLoaded', isGreaterThanOrEqualTo: timestampLoad)
+              .where('timeLoaded', isLessThanOrEqualTo: timestampReceive)
+              .where('driver', whereIn: driversFilter).snapshots(),
+
+                        /*
+                      .where('driver', whereIn: driversFilter)
+                      .where('site', whereIn: sitesFilter);
+                   */
+
+          builder: (context, snapshot) {
+            final results = snapshot.data!.docs;
+
+            return snapshot.connectionState == ConnectionState.active ? results.length != 0  ? ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, i) {
+                  final ticket = snapshot.data!.docs[i];
+
+                  return ListTile(
+                    title: Text(ticket.get(displaySortBy[displaySortByIndex].toLowerCase())),
+                    onTap: () {
+
+                    },
+                  );
+                }) : Center(
+              child: Text("No results found", style: TextStyle(color: Colors.grey)),
+            ) : loadWidget(100);
+          },
+        ) : Center(
+          child: Text("Complete Filter Values", style: TextStyle(color: Colors.grey)),
         ),
-      ) : Center(
-        child: Text("Complete Filter Values", style: TextStyle(color: Colors.grey)),
-      ),
-    );
+      );
+    } catch(e) {
+      print(e);
+    }
+
   }
 
   condition() {
@@ -105,8 +143,8 @@ class _ReportScreenState extends State<ReportScreen> {
             title: Text("Filter Date"),
               actions: [
                 TextButton(onPressed: () {
-                  Navigator.pop(context, selectedDates);
-                  displayDate = selectedDates.length == 1 ? "${DateFormat.yMMMMd().format(selectedDates[0]).toString()}" : "${DateFormat.yMMMMd().format(selectedDates[0]).toString()} - ${DateFormat.yMMMMd().format(selectedDates[1]).toString()}";
+                  Navigator.pop(context, datesFilter);
+                  displayDate = datesFilter.length == 1 ? datesFilter[0] : "${datesFilter[0]} - ${datesFilter[1]}";
                   setState((){
 
                   });
@@ -117,8 +155,9 @@ class _ReportScreenState extends State<ReportScreen> {
                 width: 400,
                 child: CalendarDatePicker2(
                     onValueChanged: (values) {
-                      print(values);
-                      selectedDates = values;
+                      List<DateTime> newDates = values;
+                      datesFilter = newDates.map((e) => DateFormat.yMMMMd().format(e).toString()).toList();
+                      datesFilterAsDate = values;
                     },
                     config: CalendarDatePicker2Config(
                         calendarType: CalendarDatePicker2Type.range
