@@ -34,80 +34,86 @@ class _ReportScreenState extends State<ReportScreen> {
   List<String> displaySortBy = ["Driver", "Site", "Date"];
   int displaySortByIndex = 0;
 
+  Timestamp? timestampLoad;
+  Timestamp? timestampReceive;
+
   @override
   Widget build(BuildContext context) {
 
     return Align(
       alignment: Alignment.centerLeft,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                spacing: 10,
-                children: [
-                  dateSelectButton(),
-                driverSelectButton(),
-                siteSelectButton(),
+      child: StatefulBuilder(
+        builder: (BuildContext context, void Function(void Function()) setStateAll) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                      spacing: 10,
+                      children: [
+                        dateSelectButton(),
+                        driverSelectButton(),
+                        siteSelectButton(),
 
-                  StatefulBuilder(
-                    builder: (context, setState) {
-                      return TextButton(onPressed: () {
-                        if (displaySortByIndex == displaySortBy.length - 1) {
-                          displaySortByIndex = 0;
-                        } else {
-                          displaySortByIndex += 1;
-                        }
-                        setState((){});
-                      }, child: Text("Sort by: ${displaySortBy[displaySortByIndex]}"));
-                    },
-                  ),
-                  filter()
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            return TextButton(onPressed: () {
+                              if (displaySortByIndex == displaySortBy.length - 1) {
+                                displaySortByIndex = 0;
+                              } else {
+                                displaySortByIndex += 1;
+                              }
+                              setState((){});
+                            }, child: Text("Sort by: ${displaySortBy[displaySortByIndex]}"));
+                          },
+                        ),
+                        IconButton(
+                            tooltip: 'Filter Results',
+                            onPressed: () {
+                              setStateAll(() {
 
-                ]),
-            ),
-          ),
+                              });
+                            }, icon: Icon(
+                            color: Colors.orange,
+                            Icons.content_paste_search_sharp))
 
-          resultsView()
+                      ]),
+                ),
+              ),
 
-        ],
+              resultsView()
+
+            ],
+          );
+        },
       ),
     );
   }
 
   resultsView() {
     try {
-
-      final timestampLoad = Timestamp.fromDate(datesFilterAsDate[0]);
-      final timestampReceive = datesFilter.length == 2 ? Timestamp.fromDate(datesFilterAsDate[1]) : Timestamp.fromDate(datesFilterAsDate[0].add(Duration(days: 1)));
-
-      print(timestampLoad);
-      print(timestampReceive);
-      print(sitesFilter);
-      print(driversFilter);
       return Container(
         height: 400,
         child: condition() == true ? StreamBuilder(
           stream: widget.userAccount.collection('tickets')
-              .where('timeLoaded', isGreaterThanOrEqualTo: timestampLoad)
-              .where('timeLoaded', isLessThanOrEqualTo: timestampReceive)
-              .where('driver', whereIn: driversFilter).snapshots(),
+              .where('driver', isEqualTo: driversFilter[0])
+              .where('site', whereIn: sitesFilter)
+              .where('timeLoaded', isGreaterThan: timestampLoad)
+              .where('timeLoaded', isLessThan: timestampReceive).snapshots(),
 
-                        /*
-                      .where('driver', whereIn: driversFilter)
-                      .where('site', whereIn: sitesFilter);
-                   */
+            /*
 
+              .where('driver', isEqualTo: driversFilter)
+              .where('site', whereIn: sitesFilter).snapshots(),
+             */
           builder: (context, snapshot) {
-            final results = snapshot.data!.docs;
-
-            return snapshot.connectionState == ConnectionState.active ? results.length != 0  ? ListView.builder(
-                itemCount: snapshot.data!.docs.length,
+            return snapshot.connectionState == ConnectionState.active ?  snapshot.data!.docs.length != 0  ? ListView.builder(
+                itemCount:  snapshot.data!.docs.length,
                 itemBuilder: (context, i) {
-                  final ticket = snapshot.data!.docs[i];
+                  final ticket =  snapshot.data!.docs[i];
 
                   return ListTile(
                     title: Text(ticket.get(displaySortBy[displaySortByIndex].toLowerCase())),
@@ -118,7 +124,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 }) : Center(
               child: Text("No results found", style: TextStyle(color: Colors.grey)),
             ) : loadWidget(100);
-          },
+          }
         ) : Center(
           child: Text("Complete Filter Values", style: TextStyle(color: Colors.grey)),
         ),
@@ -128,6 +134,8 @@ class _ReportScreenState extends State<ReportScreen> {
     }
 
   }
+
+
 
   condition() {
     return displayDate != "Select" && displaySite != "Select" && displayDriver != "Select";
@@ -158,6 +166,15 @@ class _ReportScreenState extends State<ReportScreen> {
                       List<DateTime> newDates = values;
                       datesFilter = newDates.map((e) => DateFormat.yMMMMd().format(e).toString()).toList();
                       datesFilterAsDate = values;
+
+                      timestampLoad = Timestamp.fromDate(datesFilterAsDate.first);
+
+                      if (values.length == 2) {
+                        timestampReceive = Timestamp.fromDate(datesFilterAsDate.last.add(Duration(days: 1)));
+                      } else {
+                        timestampReceive = Timestamp.fromDate(datesFilterAsDate.first.add(Duration(days: 1)));
+                      }
+
                     },
                     config: CalendarDatePicker2Config(
                         calendarType: CalendarDatePicker2Type.range
@@ -462,18 +479,5 @@ class _ReportScreenState extends State<ReportScreen> {
       },
     );
   }
-
-  filter() {
-    return IconButton(
-        tooltip: 'Filter Results',
-        onPressed: () {
-          setState(() {
-
-          });
-    }, icon: Icon(
-        color: Colors.orange,
-        Icons.content_paste_search_sharp));
-  }
-
 
 }
