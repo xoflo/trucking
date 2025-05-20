@@ -252,63 +252,69 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: Text('Driver: ${driverName}'),
                     trailing: Icon(Icons.arrow_forward_ios),
                     onTap: () {
-                      final result = showDialog(
+                      showDialog(
                           context: context,
                           builder: (_) => PopScope(
                                 onPopInvokedWithResult: (bool, dynamic value) {
-                                  driverName = value.name;
-                                  driverIncentiveRate = value.incentiveRate;
-                                  setState(() {});
+                                  if (value != null) {
+                                    driverName = value.name;
+                                    driverIncentiveRate = value.incentiveRate;
+                                    setState(() {});
+                                  }
                                 },
                                 child: AlertDialog(
                                   title: Text("Select Driver"),
-                                  content: StreamBuilder(
-                                    stream: widget.userAccount
-                                        .collection('drivers')
-                                        .snapshots(),
-                                    builder: (context, snapshot) {
-                                      return snapshot.connectionState ==
-                                              ConnectionState.active
-                                          ? snapshot.data!.docs.length != 0
-                                              ? Container(
-                                                  height: 400,
-                                                  width: 400,
-                                                  child: ListView.builder(
-                                                      itemCount: snapshot
-                                                          .data!.docs.length,
-                                                      itemBuilder:
-                                                          (context, i) {
-                                                        final driver = snapshot
-                                                            .data!.docs[i];
+                                  content: Container(
+                                    height: 450,
+                                    width: 400,
+                                    child: StreamBuilder(
+                                      stream: widget.userAccount
+                                          .collection('drivers')
+                                          .snapshots(),
+                                      builder: (context, snapshot) {
+                                        return snapshot.connectionState ==
+                                                ConnectionState.active
+                                            ? snapshot.data!.docs.length != 0
+                                                ? Container(
+                                                    height: 400,
+                                                    width: 400,
+                                                    child: ListView.builder(
+                                                        itemCount: snapshot
+                                                            .data!.docs.length,
+                                                        itemBuilder:
+                                                            (context, i) {
+                                                          final driver = snapshot
+                                                              .data!.docs[i];
 
-                                                        return ListTile(
-                                                          title: Text(driver
-                                                              .get('name')),
-                                                          onTap: () {
-                                                            Navigator.pop(
-                                                                context,
-                                                                Driver.fromFirebase(driver));
-                                                          },
-                                                        );
-                                                      }),
-                                                )
-                                              : Center(
-                                                  child: Text(
-                                                      "No Drivers Found",
-                                                      style: TextStyle(
-                                                          color: Colors.grey)),
-                                                )
-                                          : Container(
-                                              height: 50,
-                                              width: 50,
-                                              child: Center(
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  color: Colors.orange,
+                                                          return ListTile(
+                                                            title: Text(driver
+                                                                .get('name')),
+                                                            onTap: () {
+                                                              Navigator.pop(
+                                                                  context,
+                                                                  Driver.fromFirebase(driver));
+                                                            },
+                                                          );
+                                                        }),
+                                                  )
+                                                : Center(
+                                                    child: Text(
+                                                        "No Drivers Found",
+                                                        style: TextStyle(
+                                                            color: Colors.grey)),
+                                                  )
+                                            : Container(
+                                                height: 50,
+                                                width: 50,
+                                                child: Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    color: Colors.orange,
+                                                  ),
                                                 ),
-                                              ),
-                                            );
-                                    },
+                                              );
+                                      },
+                                    ),
                                   ),
                                 ),
                               ));
@@ -383,11 +389,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           context: context,
                           builder: (_) => PopScope(
                                 onPopInvokedWithResult: (bool, dynamic value) {
-
-                                  siteName = "${value.name}";
-                                  siteActivity = "${value.type}";
-                                  siteDistance = value.distance;
-                                  setState(() {});
+                                  if (value != null) {
+                                    siteName = "${value.name}";
+                                    siteActivity = "${value.type}";
+                                    siteDistance = value.distance;
+                                    setState(() {});
+                                  }
                                 },
                                 child: AlertDialog(
                                   title: Text("Select Site"),
