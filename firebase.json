@@ -1,1 +1,33 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"trucking-84f58","appId":"1:435469706152:android:5c6744e64e5adbf77c739d","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"trucking-84f58","configurations":{"android":"1:435469706152:android:5c6744e64e5adbf77c739d","ios":"1:435469706152:ios:ac414c81c028b5857c739d","macos":"1:435469706152:ios:ac414c81c028b5857c739d","web":"1:435469706152:web:e8e68b56b873c89b7c739d","windows":"1:435469706152:web:985fdce2abe831bc7c739d"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "trucking-84f58",
+          "appId": "1:435469706152:android:5c6744e64e5adbf77c739d",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "trucking-84f58",
+          "configurations": {
+            "android": "1:435469706152:android:5c6744e64e5adbf77c739d",
+            "ios": "1:435469706152:ios:ac414c81c028b5857c739d",
+            "macos": "1:435469706152:ios:ac414c81c028b5857c739d",
+            "web": "1:435469706152:web:e8e68b56b873c89b7c739d",
+            "windows": "1:435469706152:web:985fdce2abe831bc7c739d"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

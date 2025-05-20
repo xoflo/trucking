@@ -96,23 +96,33 @@ class _DriverScreenState extends State<DriverScreen> {
   }
 
   addDriverFirebase() async {
-    final result =
-        await Driver(driverName.text, driverContact.text, driverAddress.text, double.parse(regularRate.text), double.parse(incentiveRate.text))
-            .addToFirebase(widget.userAccount);
 
-    if (result == "1") {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Driver Added")));
-      clearDriverFields();
+    try {
+      double.parse(regularRate.text);
+      double.parse(incentiveRate.text);
+
+      final result =
+      await Driver(driverName.text, driverContact.text, driverAddress.text, double.parse(regularRate.text), double.parse(incentiveRate.text))
+          .addToFirebase(widget.userAccount);
+
+      if (result == "1") {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Driver Added")));
+        clearDriverFields();
+      }
+
+      if (result != "1") {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Something Went Wrong")));
+        clearDriverFields();
+      }
+
+    } catch(e) {
+      print(e);
     }
 
-    if (result != "1") {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Something Went Wrong")));
-      clearDriverFields();
-    }
   }
 
   driverListView() {
