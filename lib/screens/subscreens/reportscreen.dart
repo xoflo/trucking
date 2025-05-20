@@ -33,7 +33,7 @@ class _ReportScreenState extends State<ReportScreen> {
   List<String> sitesFilter = [];
   List<String> typesFilter = [];
 
-  List<String> displaySortBy = ["Driver", "Site", "Date"];
+  List<String> displaySortBy = ["Driver", "Site"];
   int displaySortByIndex = 0;
 
   Timestamp? timestampLoad;
@@ -97,11 +97,11 @@ class _ReportScreenState extends State<ReportScreen> {
 
   sortResults(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
 
-    final sortBy = displaySortBy[displaySortByIndex].toLowerCase();
-
     final realDocs = docs;
     List<QueryDocumentSnapshot<dynamic>> newResultDrive = [];
     List<QueryDocumentSnapshot<dynamic>> newResultSite = [];
+
+    List<List<QueryDocumentSnapshot<dynamic>>> newResultFR = [];
 
     for (int i = 0; i < driversFilter.length; i++) {
       newResultDrive.addAll(docs.where((e) => e.get('driver') == driversFilter[i]).toList());
@@ -111,10 +111,18 @@ class _ReportScreenState extends State<ReportScreen> {
       newResultSite.addAll(newResultDrive.where((e) => e.get('site') == sitesFilter[i]).toList());
     }
 
-    newResultSite.where((e) => e.get(sortBy) == )
+    if (displaySortByIndex == 0) {
+      for (int i = 0; i < driversFilter.length; i++) {
+        newResultFR.add(newResultSite.where((e) => e.get('driver') == driversFilter[i]).toList());
+      }}
 
-    return newResultSite.toSet().toList();;
+    if (displaySortByIndex == 1) {
+      for (int i = 0; i < sitesFilter.length; i++) {
+        newResultFR.add(newResultSite.where((e) => e.get('site') == sitesFilter[i]).toList());
+      }
+  }
 
+    return newResultFR;
   }
 
   resultsView() {
@@ -128,26 +136,94 @@ class _ReportScreenState extends State<ReportScreen> {
           builder: (context, snapshot) {
             return snapshot.connectionState == ConnectionState.active ?  FutureBuilder(
               future: sortResults(snapshot.data!.docs),
-              builder: (BuildContext context, AsyncSnapshot<List<QueryDocumentSnapshot<Map<String, dynamic>>>> snapshot) {
+              builder: (BuildContext context, AsyncSnapshot<List<List<QueryDocumentSnapshot<Map<String, dynamic>>>>> snapshot) {
                 return snapshot.connectionState == ConnectionState.done ? snapshot.data!.length != 0 ? ListView.builder(
                     itemCount:  snapshot.data!.length,
                     itemBuilder: (context, i) {
-                      final ticket =  snapshot.data![i];
+                      final ticketList = snapshot.data![i];
+                      final sortBy = displaySortBy[displaySortByIndex].toLowerCase();
+
+                      int ticketCounter = 0;
+
 
                       return ListTile(
-                        title: Text(ticket.get()),
+                        title: Text(ticketList.first.get(sortBy)),
                         onTap: () {
-                          showDialog(context: context, builder: (_) => AlertDialog(
-                            content: Container(
-                              height: 400,
-                              width: 400,
-                            ),
+                          showDialog(context: context, builder: (_) => StatefulBuilder(
+                            builder: (BuildContext context, void Function(void Function()) setState) {
+
+                              final ticket = Ticket.fromFirebase(ticketList[ticketCounter]);
+
+                              return AlertDialog(
+                                title: Row(
+                                  children: [
+                                    Text("Trips (${ticketCounter + 1} / ${ticketList.length})"),
+                                    Spacer(),
+                                    IconButton(
+                                        onPressed: () {
+                                          if (ticketCounter == 0) {
+                                          } else {
+                                            ticketCounter = ticketCounter - 1;
+                                            setState(() {
+
+                                            });
+                                          }
+                                        },
+                                        icon: Icon(
+                                            color:
+                                            ticketCounter == 0 ? Colors.grey : Colors.orange,
+                                            Icons.chevron_left)),
+                                    IconButton(
+                                        onPressed: () {
+                                          if (ticketCounter == ticketList.length - 1) {
+                                          } else {
+                                            ticketCounter = ticketCounter + 1;
+                                            setState(() {
+
+                                            });
+                                          }
+                                        },
+                                        icon: Icon(
+                                            color: ticketCounter == ticketList.length - 1
+                                                ? Colors.grey
+                                                : Colors.orange,
+                                            Icons.chevron_right))
+                                  ],
+                                ),
+                                content: SizedBox(
+                                  height: 380,
+                                  width: 400,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("EPDC TT #: ${ticket.epdc}"),
+                                      Text("MMDC TT #: ${ticket.mmdc}"),
+                                      Text("Date: ${ticket.date}"),
+                                      Text("Loaded By: ${ticket.loadedBy}"),
+                                      Text("Time Loaded: ${DateFormat('hh:mm a').format(ticket.timeLoaded!)}"),
+                                      Text("Load Checker: ${ticket.loadChecker}"),
+                                      Text("Load Operator: ${ticket.loadOperator}"),
+                                      Text("Hauled By: ${ticket.hauledBy}"),
+                                      Text("Driver: ${ticket.driver}"),
+                                      Text("Received By: ${ticket.receivedBy}"),
+                                      Text("Time Received: ${DateFormat('hh:mm a').format(ticket.timeReceived!)}"),
+                                      Text("Receive Operator: ${ticket.receiveOperator}"),
+                                      Text("Receive Checker: ${ticket.receiveChecker}"),
+                                      Text("Material: ${ticket.material}"),
+                                      Text("Activity: ${ticket.activity}"),
+                                      Text("Site: ${ticket.site}"),
+                                      Text("Destination: ${ticket.destination}"),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ));
                         },
                       );
-                    }): loadWidget(100) : Center(
+                    }) : Center(
                   child: Text("No results found", style: TextStyle(color: Colors.grey)),
-                );
+                ) : loadWidget(100);
               },
             ) : loadWidget(100);
           }
