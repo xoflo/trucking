@@ -19,13 +19,10 @@ class ReportScreen extends StatefulWidget {
 }
 
 class _ReportScreenState extends State<ReportScreen> {
-
-
   String displayDate = "Select";
   String displayDriver = "Select";
   String displaySite = "Select";
   String displayType = "All";
-
 
   List<DateTime> datesFilterAsDate = [DateTime(2025)];
   List<String> datesFilter = [];
@@ -41,11 +38,11 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Align(
       alignment: Alignment.centerLeft,
       child: StatefulBuilder(
-        builder: (BuildContext context, void Function(void Function()) setStateAll) {
+        builder:
+            (BuildContext context, void Function(void Function()) setStateAll) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -53,41 +50,38 @@ class _ReportScreenState extends State<ReportScreen> {
                 padding: const EdgeInsets.all(15.0),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: Row(
-                      spacing: 10,
-                      children: [
-                        dateSelectButton(),
-                        driverSelectButton(),
-                        siteSelectButton(),
-
-                        StatefulBuilder(
-                          builder: (context, setState) {
-                            return TextButton(onPressed: () {
-                              if (displaySortByIndex == displaySortBy.length - 1) {
+                  child: Row(spacing: 10, children: [
+                    dateSelectButton(),
+                    driverSelectButton(),
+                    siteSelectButton(),
+                    StatefulBuilder(
+                      builder: (context, setState) {
+                        return TextButton(
+                            onPressed: () {
+                              if (displaySortByIndex ==
+                                  displaySortBy.length - 1) {
                                 displaySortByIndex = 0;
                               } else {
                                 displaySortByIndex += 1;
                               }
-                              setState((){});
-                            }, child: Text("Sort by: ${displaySortBy[displaySortByIndex]}"));
-                          },
-                        ),
-                        IconButton(
-                            tooltip: 'Filter Results',
-                            onPressed: () {
-                              setStateAll(() {
-
-                              });
-                            }, icon: Icon(
+                              setState(() {});
+                            },
+                            child: Text(
+                                "Sort by: ${displaySortBy[displaySortByIndex]}"));
+                      },
+                    ),
+                    IconButton(
+                        tooltip: 'Filter Results',
+                        onPressed: () {
+                          setStateAll(() {});
+                        },
+                        icon: Icon(
                             color: Colors.orange,
                             Icons.content_paste_search_sharp))
-
-                      ]),
+                  ]),
                 ),
               ),
-
               resultsView()
-
             ],
           );
         },
@@ -95,222 +89,322 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  sortResults(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
+  queryFilter(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
+    List<QueryDocumentSnapshot<dynamic>> filteredDrivers = [];
+    List<QueryDocumentSnapshot<dynamic>> filteredSites = [];
 
-    final realDocs = docs;
-    List<QueryDocumentSnapshot<dynamic>> newResultDrive = [];
-    List<QueryDocumentSnapshot<dynamic>> newResultSite = [];
+    List<List<QueryDocumentSnapshot<dynamic>>> FilteredResults = [];
 
-    List<List<QueryDocumentSnapshot<dynamic>>> newResultFR = [];
-
-    if (displayDriver == 'All') {
-      newResultDrive = docs;
+    if (displayDriver == "All") {
+      filteredDrivers = docs;
     } else {
       for (int i = 0; i < driversFilter.length; i++) {
-        newResultDrive.addAll(docs.where((e) => e.get('driver') == driversFilter[i]).toList());
+        filteredDrivers.addAll(
+            docs.where((e) => e.get('driver') == driversFilter[i]).toList());
       }
     }
 
-    if (displaySite == 'All') {
-      newResultSite.addAll(newResultDrive);
+    if (displaySite == "All") {
+      filteredSites.addAll(filteredDrivers);
+    } else if (displaySite != "All" && sitesFilter.isEmpty) {
+      filteredSites.addAll(filteredDrivers
+          .where((e) => e.get('activity') == displaySite)
+          .toList());
     } else {
       for (int i = 0; i < sitesFilter.length; i++) {
-        newResultSite.addAll(newResultDrive.where((e) => e.get('site') == sitesFilter[i]).toList());
+        filteredSites.addAll(filteredDrivers
+            .where((e) => e.get('site') == sitesFilter[i])
+            .toList());
       }
     }
 
     if (displaySortByIndex == 0) {
-      for (int i = 0; i < driversFilter.length; i++) {
-        newResultFR.add(newResultSite.where((e) => e.get('driver') == driversFilter[i]).toList());
-      }}
+      if (displayDriver == "All") {
+        final List<QueryDocumentSnapshot<dynamic>> allDrivers = await widget
+            .userAccount
+            .collection('drivers')
+            .get()
+            .then((value) => value.docs);
+        for (int i = 0; i < allDrivers.length; i++) {
+          FilteredResults.add(filteredSites
+              .where((e) => e.get('driver') == allDrivers[i].get('name'))
+              .toList());
+        }
+      } else {
+        for (int i = 0; i < driversFilter.length; i++) {
+          FilteredResults.add(filteredSites
+              .where((e) => e.get('driver') == driversFilter[i])
+              .toList());
+        }
+      }
+    }
 
     if (displaySortByIndex == 1) {
-      for (int i = 0; i < sitesFilter.length; i++) {
-        newResultFR.add(newResultSite.where((e) => e.get('site') == sitesFilter[i]).toList());
+      if (displaySite == "All") {
+    final List<QueryDocumentSnapshot<dynamic>> allSites = await widget
+        .userAccount
+        .collection('sites')
+        .get()
+        .then((value) => value.docs);
+        for (int i = 0; i < allSites.length; i++) {
+          FilteredResults.add(filteredSites
+              .where((e) => e.get('site') == allSites[i].get('name'))
+              .toList());
+        }
+      } else if (displaySite != 'All' && sitesFilter.isEmpty) {
+        FilteredResults.add(filteredSites
+            .where((e) => e.get('activity') == displaySite)
+            .toList());
+      } else {
+        for (int i = 0; i < sitesFilter.length; i++) {
+          FilteredResults.add(filteredSites
+              .where((e) => e.get('site') == sitesFilter[i])
+              .toList());
+        }
       }
-  }
+    }
 
-    return newResultFR;
+    return FilteredResults;
   }
 
   resultsView() {
     try {
       return Container(
         height: 400,
-        child: condition() == true ? StreamBuilder(
-          stream: widget.userAccount.collection('tickets')
-              .where('timeLoaded', isGreaterThan: timestampLoad)
-              .where('timeLoaded', isLessThan: timestampReceive).snapshots(),
-          builder: (context, snapshot) {
-            return snapshot.connectionState == ConnectionState.active ?  FutureBuilder(
-              future: sortResults(snapshot.data!.docs),
-              builder: (BuildContext context, AsyncSnapshot<List<List<QueryDocumentSnapshot<Map<String, dynamic>>>>> snapshot) {
-                return snapshot.connectionState == ConnectionState.done ? snapshot.data!.length != 0 ? ListView.builder(
-                    itemCount:  snapshot.data!.length,
-                    itemBuilder: (context, i) {
-                      final ticketList = snapshot.data![i];
-                      final sortBy = displaySortBy[displaySortByIndex].toLowerCase();
+        child: condition() == true
+            ? StreamBuilder(
+                stream: widget.userAccount
+                    .collection('tickets')
+                    .where('timeLoaded', isGreaterThan: timestampLoad)
+                    .where('timeLoaded', isLessThan: timestampReceive)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  return snapshot.connectionState == ConnectionState.active
+                      ? FutureBuilder(
+                          future: queryFilter(snapshot.data!.docs),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<
+                                      List<
+                                          List<
+                                              QueryDocumentSnapshot<
+                                                  Map<String, dynamic>>>>>
+                                  snapshot) {
+                            return snapshot.connectionState ==
+                                    ConnectionState.done
+                                ? snapshot.data!.length != 0
+                                    ? ListView.builder(
+                                        itemCount: snapshot.data!.length,
+                                        itemBuilder: (context, i) {
+                                          final ticketList = snapshot.data![i];
+                                          final sortBy =
+                                              displaySortBy[displaySortByIndex]
+                                                  .toLowerCase();
 
-                      int ticketCounter = 0;
+                                          int ticketCounter = 0;
 
+                                          return ListTile(
+                                            title: Text(
+                                                ticketList.first.get(sortBy)),
+                                            subtitle: Text(
+                                                "Tickets: ${ticketList.length}"),
+                                            onTap: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (_) => StatefulBuilder(
+                                                            builder: (BuildContext
+                                                                    context,
+                                                                void Function(
+                                                                        void
+                                                                            Function())
+                                                                    setState) {
+                                                              final ticket = Ticket
+                                                                  .fromFirebase(
+                                                                      ticketList[
+                                                                          ticketCounter]);
 
-                      return ListTile(
-                        title: Text(ticketList.first.get(sortBy)),
-                        onTap: () {
-                          showDialog(context: context, builder: (_) => StatefulBuilder(
-                            builder: (BuildContext context, void Function(void Function()) setState) {
-
-                              final ticket = Ticket.fromFirebase(ticketList[ticketCounter]);
-
-                              return AlertDialog(
-                                title: Row(
-                                  children: [
-                                    Text("Trips (${ticketCounter + 1} / ${ticketList.length})"),
-                                    Spacer(),
-                                    IconButton(
-                                        onPressed: () {
-                                          if (ticketCounter == 0) {
-                                          } else {
-                                            ticketCounter = ticketCounter - 1;
-                                            setState(() {
-
-                                            });
-                                          }
-                                        },
-                                        icon: Icon(
-                                            color:
-                                            ticketCounter == 0 ? Colors.grey : Colors.orange,
-                                            Icons.chevron_left)),
-                                    IconButton(
-                                        onPressed: () {
-                                          if (ticketCounter == ticketList.length - 1) {
-                                          } else {
-                                            ticketCounter = ticketCounter + 1;
-                                            setState(() {
-
-                                            });
-                                          }
-                                        },
-                                        icon: Icon(
-                                            color: ticketCounter == ticketList.length - 1
-                                                ? Colors.grey
-                                                : Colors.orange,
-                                            Icons.chevron_right))
-                                  ],
-                                ),
-                                content: SizedBox(
-                                  height: 450,
-                                  width: 400,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text("EPDC TT #: ${ticket.epdc}"),
-                                      Text("MMDC TT #: ${ticket.mmdc}"),
-                                      Text("Date: ${ticket.date}"),
-                                      Text("Loaded By: ${ticket.loadedBy}"),
-                                      Text("Time Loaded: ${DateFormat('hh:mm a').format(ticket.timeLoaded!)}"),
-                                      Text("Load Checker: ${ticket.loadChecker}"),
-                                      Text("Load Operator: ${ticket.loadOperator}"),
-                                      Text("Hauled By: ${ticket.hauledBy}"),
-                                      Text("Driver: ${ticket.driver}"),
-                                      Text("Received By: ${ticket.receivedBy}"),
-                                      Text("Time Received: ${DateFormat('hh:mm a').format(ticket.timeReceived!)}"),
-                                      Text("Receive Operator: ${ticket.receiveOperator}"),
-                                      Text("Receive Checker: ${ticket.receiveChecker}"),
-                                      Text("Material: ${ticket.material}"),
-                                      Text("Activity: ${ticket.activity}"),
-                                      Text("Site: ${ticket.site}"),
-                                      Text("Destination: ${ticket.destination}"),
-                                      Divider(),
-                                      Text("Driver Incentive Rate: P${ticket.driverIncentiveRate}"),
-                                      Text("Site Distance: ${ticket.siteDistance}km"),
-                                      Text("Total: P${ticket.total}"),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ));
-                        },
-                      );
-                    }) : Center(
-                  child: Text("No results found", style: TextStyle(color: Colors.grey)),
-                ) : loadWidget(100);
-              },
-            ) : loadWidget(100);
-          }
-        ) : Center(
-          child: Text("Complete Filter Values", style: TextStyle(color: Colors.grey)),
-        ),
+                                                              return AlertDialog(
+                                                                title: Row(
+                                                                  children: [
+                                                                    Text(
+                                                                        "Trips (${ticketCounter + 1} / ${ticketList.length})"),
+                                                                    Spacer(),
+                                                                    IconButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          if (ticketCounter ==
+                                                                              0) {
+                                                                          } else {
+                                                                            ticketCounter =
+                                                                                ticketCounter - 1;
+                                                                            setState(() {});
+                                                                          }
+                                                                        },
+                                                                        icon: Icon(
+                                                                            color: ticketCounter == 0
+                                                                                ? Colors.grey
+                                                                                : Colors.orange,
+                                                                            Icons.chevron_left)),
+                                                                    IconButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          if (ticketCounter ==
+                                                                              ticketList.length - 1) {
+                                                                          } else {
+                                                                            ticketCounter =
+                                                                                ticketCounter + 1;
+                                                                            setState(() {});
+                                                                          }
+                                                                        },
+                                                                        icon: Icon(
+                                                                            color: ticketCounter == ticketList.length - 1
+                                                                                ? Colors.grey
+                                                                                : Colors.orange,
+                                                                            Icons.chevron_right))
+                                                                  ],
+                                                                ),
+                                                                content:
+                                                                    SizedBox(
+                                                                  height: 450,
+                                                                  width: 400,
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Text(
+                                                                          "EPDC TT #: ${ticket.epdc}"),
+                                                                      Text(
+                                                                          "MMDC TT #: ${ticket.mmdc}"),
+                                                                      Text(
+                                                                          "Date: ${ticket.date}"),
+                                                                      Text(
+                                                                          "Loaded By: ${ticket.loadedBy}"),
+                                                                      Text(
+                                                                          "Time Loaded: ${DateFormat('hh:mm a').format(ticket.timeLoaded!)}"),
+                                                                      Text(
+                                                                          "Load Checker: ${ticket.loadChecker}"),
+                                                                      Text(
+                                                                          "Load Operator: ${ticket.loadOperator}"),
+                                                                      Text(
+                                                                          "Hauled By: ${ticket.hauledBy}"),
+                                                                      Text(
+                                                                          "Driver: ${ticket.driver}"),
+                                                                      Text(
+                                                                          "Received By: ${ticket.receivedBy}"),
+                                                                      Text(
+                                                                          "Time Received: ${DateFormat('hh:mm a').format(ticket.timeReceived!)}"),
+                                                                      Text(
+                                                                          "Receive Operator: ${ticket.receiveOperator}"),
+                                                                      Text(
+                                                                          "Receive Checker: ${ticket.receiveChecker}"),
+                                                                      Text(
+                                                                          "Material: ${ticket.material}"),
+                                                                      Text(
+                                                                          "Activity: ${ticket.activity}"),
+                                                                      Text(
+                                                                          "Site: ${ticket.site}"),
+                                                                      Text(
+                                                                          "Destination: ${ticket.destination}"),
+                                                                      Divider(),
+                                                                      Text(
+                                                                          "Driver Incentive Rate: P${ticket.driverIncentiveRate}"),
+                                                                      Text(
+                                                                          "Site Distance: ${ticket.siteDistance}km"),
+                                                                      Text(
+                                                                          "Total: P${ticket.total}"),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            },
+                                                          ));
+                                            },
+                                          );
+                                        })
+                                    : Center(
+                                        child: Text("No results found",
+                                            style:
+                                                TextStyle(color: Colors.grey)),
+                                      )
+                                : loadWidget(100);
+                          },
+                        )
+                      : loadWidget(100);
+                })
+            : Center(
+                child: Text("Complete Filter Values",
+                    style: TextStyle(color: Colors.grey)),
+              ),
       );
-    } catch(e) {
+    } catch (e) {
       print(e);
     }
-
   }
 
-
-
   condition() {
-    return displayDate != "Select" && displaySite != "Select" && displayDriver != "Select";
+    return displayDate != "Select" &&
+        displaySite != "Select" &&
+        displayDriver != "Select";
   }
 
   dateSelectButton() {
-
     return StatefulBuilder(
       builder: (BuildContext context, void Function(void Function()) setState) {
-        return ElevatedButton(onPressed: () async {
+        return ElevatedButton(
+            onPressed: () async {
+              List<DateTime> result = await showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                      title: Text("Filter Date"),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pop(context, datesFilter);
+                              displayDate = datesFilter.length == 1
+                                  ? datesFilter[0]
+                                  : "${datesFilter[0]} - ${datesFilter[1]}";
+                              setState(() {});
+                            },
+                            child: Text("Confirm"))
+                      ],
+                      content: Container(
+                        height: 400,
+                        width: 400,
+                        child: CalendarDatePicker2(
+                            onValueChanged: (values) {
+                              List<DateTime> newDates = values;
+                              datesFilter = newDates
+                                  .map((e) =>
+                                      DateFormat.yMMMMd().format(e).toString())
+                                  .toList();
+                              datesFilterAsDate = values;
 
-          List<DateTime> result = await showDialog(context: context, builder: (_) => AlertDialog(
-            title: Text("Filter Date"),
-              actions: [
-                TextButton(onPressed: () {
-                  Navigator.pop(context, datesFilter);
-                  displayDate = datesFilter.length == 1 ? datesFilter[0] : "${datesFilter[0]} - ${datesFilter[1]}";
-                  setState((){
+                              timestampLoad =
+                                  Timestamp.fromDate(datesFilterAsDate.first);
 
-                  });
-                }, child: Text("Confirm"))
-              ],
-              content:  Container(
-                height: 400,
-                width: 400,
-                child: CalendarDatePicker2(
-                    onValueChanged: (values) {
-                      List<DateTime> newDates = values;
-                      datesFilter = newDates.map((e) => DateFormat.yMMMMd().format(e).toString()).toList();
-                      datesFilterAsDate = values;
-
-                      timestampLoad = Timestamp.fromDate(datesFilterAsDate.first);
-
-                      if (values.length == 2) {
-                        timestampReceive = Timestamp.fromDate(datesFilterAsDate.last.add(Duration(days: 1)));
-                      } else {
-                        timestampReceive = Timestamp.fromDate(datesFilterAsDate.first.add(Duration(days: 1)));
-                      }
-
-                    },
-                    config: CalendarDatePicker2Config(
-                        calendarType: CalendarDatePicker2Type.range
-                    ), value: [
-                  DateTime.now()
-                ]),
-              )
-          ));
-
-
-        }, child: Text("${MediaQuery.of(context).size.width < 700 ? "$displayDate" : "Filter Date: $displayDate"} "));
+                              if (values.length == 2) {
+                                timestampReceive = Timestamp.fromDate(
+                                    datesFilterAsDate.last
+                                        .add(Duration(days: 1)));
+                              } else {
+                                timestampReceive = Timestamp.fromDate(
+                                    datesFilterAsDate.first
+                                        .add(Duration(days: 1)));
+                              }
+                            },
+                            config: CalendarDatePicker2Config(
+                                calendarType: CalendarDatePicker2Type.range),
+                            value: [DateTime.now()]),
+                      )));
+            },
+            child: Text(
+                "${MediaQuery.of(context).size.width < 700 ? "$displayDate" : "Filter Date: $displayDate"} "));
       },
-
-
-
     );
-
-
   }
 
   driverSelectButton() {
-
     bool multipleSelectDriver = false;
 
     final driverSearch = TextEditingController();
@@ -318,295 +412,423 @@ class _ReportScreenState extends State<ReportScreen> {
     return StreamBuilder(
       stream: widget.userAccount.collection('drivers').snapshots(),
       builder: (context, snapshot) {
+        return snapshot.connectionState == ConnectionState.active
+            ? StatefulBuilder(
+                builder: (BuildContext context,
+                    void Function(void Function()) setStateButton) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      List<QueryDocumentSnapshot<Map<String, dynamic>>>
+                          drivers = snapshot.data!.docs;
 
-        return snapshot.connectionState == ConnectionState.active ? StatefulBuilder(
-          builder: (BuildContext context, void Function(void Function()) setStateButton) {
-            return ElevatedButton(onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (_) => StatefulBuilder(
+                                builder: (BuildContext context,
+                                    void Function(void Function()) setState) {
+                                  return AlertDialog(
+                                    title: Text("Filter Driver"),
+                                    content: Container(
+                                      height: 550,
+                                      width: 400,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                20, 5, 20, 10),
+                                            height: 50,
+                                            child: TextField(
+                                              controller: driverSearch,
+                                              decoration: InputDecoration(
+                                                  hintText: 'Search Driver'),
+                                              onChanged: (value) {
+                                                print(value);
+                                                drivers = snapshot.data!.docs
+                                                    .where((e) => e
+                                                        .get('name')
+                                                        .toString()
+                                                        .toUpperCase()
+                                                        .contains(value
+                                                            .toUpperCase()))
+                                                    .toList();
 
-              List<QueryDocumentSnapshot<Map<String, dynamic>>> drivers = snapshot.data!.docs;
+                                                print(drivers.length);
+                                                setState(() {});
+                                              },
+                                            ),
+                                          ),
+                                          Container(
+                                            height: 400,
+                                            width: 400,
+                                            child: ListView.builder(
+                                                itemCount: drivers.length,
+                                                itemBuilder: (context, i) {
+                                                  final name =
+                                                      drivers[i].get('name');
 
-              showDialog(context: context, builder: (_) => StatefulBuilder(
-                builder: (BuildContext context, void Function(void Function()) setState) {
-                  return AlertDialog(
-                    title: Text("Filter Driver"),
-                    content: Container(
-                      height: 550,
-                      width: 400,
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(20, 5, 20, 10),
-                            height: 50,
-                            child: TextField(
-                              controller: driverSearch,
-                              decoration: InputDecoration(
-                                  hintText: 'Search Driver'
-                              ),
-                              onChanged: (value) {
-                                print(value);
-                                drivers = snapshot.data!.docs.where((e) => e.get('name').toString().toUpperCase().contains(value.toUpperCase())).toList();
-
-                                print(drivers.length);
-                                setState((){
-
-                                });
-                              },
-                            ),
-                          ),
-                          Container(
-                            height: 400,
-                            width: 400,
-                            child: ListView.builder(
-                                itemCount: drivers.length,
-                                itemBuilder: (context, i) {
-
-                                  final name = drivers[i].get('name');
-
-                                  return StatefulBuilder(
-                                    builder: (BuildContext context, void Function(void Function()) setState) {
-                                      return CheckboxListTile(
-                                        title: Text(name),
-                                        value: driversFilter.contains(name),
-                                        onChanged: (bool? newValue) {
-                                          if (newValue == true) {
-                                            driversFilter.add(name);
-                                          } else {
-                                            driversFilter.remove(name);
-                                          }
-                                          setState((){});
-                                        },
-                                      );
-                                    },
+                                                  return StatefulBuilder(
+                                                    builder: (BuildContext
+                                                            context,
+                                                        void Function(
+                                                                void Function())
+                                                            setState) {
+                                                      return CheckboxListTile(
+                                                        title: Text(name),
+                                                        value: driversFilter
+                                                            .contains(name),
+                                                        onChanged:
+                                                            (bool? newValue) {
+                                                          if (newValue ==
+                                                              true) {
+                                                            driversFilter
+                                                                .add(name);
+                                                          } else {
+                                                            driversFilter
+                                                                .remove(name);
+                                                          }
+                                                          setState(() {});
+                                                        },
+                                                      );
+                                                    },
+                                                  );
+                                                }),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            driversFilter.clear();
+                                            setState(() {});
+                                          },
+                                          child: Text("Clear")),
+                                      TextButton(
+                                          onPressed: () {
+                                            displayDriver = 'All';
+                                            driversFilter.clear();
+                                            Navigator.pop(context);
+                                            setStateButton(() {});
+                                          },
+                                          child: Text("Select All")),
+                                      TextButton(
+                                          onPressed: () {
+                                            if (driversFilter.isNotEmpty) {
+                                              displayDriver =
+                                                  '${driversFilter.length == 1 ? driversFilter[0] : "${driversFilter.length} Selected"}';
+                                              Navigator.pop(context);
+                                              setStateButton(() {});
+                                            }
+                                          },
+                                          child: Text("Filter"))
+                                    ],
                                   );
-                                }),
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-
-                      TextButton(onPressed: () {
-                        driversFilter.clear();
-                        setState((){
-
-                        });
-
-                      }, child: Text("Clear")),
-
-                      TextButton(onPressed: () {
-                        displayDriver = 'All';
-                        Navigator.pop(context);
-                        setStateButton((){
-
-                        });
-
-                      }, child: Text("Select All")),
-                      TextButton(onPressed: () {
-                        if (driversFilter.isNotEmpty) {
-                          displayDriver = '${driversFilter.length == 1 ? driversFilter[0] : "${driversFilter.length} Selected"}';
-                          Navigator.pop(context);
-                          setStateButton((){
-                          });
-                        }
-                      }, child: Text("Confirm Selected"))
-                    ],
+                                },
+                              ));
+                    },
+                    child: Text("Driver: ${displayDriver}"),
                   );
                 },
-              ));
-            }, child: Text("Driver: ${displayDriver}"),
-
-            );
-          },
-        ) : Container();
+              )
+            : Container();
       },
     );
   }
 
   siteSelectButton() {
-
     final siteSearch = TextEditingController();
 
     return StreamBuilder(
       stream: widget.userAccount.collection('sites').snapshots(),
       builder: (context, snapshot) {
+        return snapshot.connectionState == ConnectionState.active
+            ? StatefulBuilder(
+                builder: (BuildContext context,
+                    void Function(void Function()) setStateButton) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (_) => StatefulBuilder(
+                                builder: (BuildContext context,
+                                    void Function(void Function())
+                                        setStateDialog) {
+                                  List<
+                                          QueryDocumentSnapshot<
+                                              Map<String, dynamic>>> sites =
+                                      snapshot.data!.docs;
 
-        return snapshot.connectionState == ConnectionState.active ? StatefulBuilder(
-          builder: (BuildContext context, void Function(void Function()) setStateButton) {
-            return ElevatedButton(onPressed: () {
-              showDialog(context: context, builder: (_) => StatefulBuilder(
-                builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+                                  if (typesFilter.isNotEmpty) {
+                                    sites.clear();
+                                    typesFilter.forEach((e) {
+                                      sites.addAll(snapshot.data!.docs.where(
+                                          (x) =>
+                                              x
+                                                  .get('type')
+                                                  .toString()
+                                                  .toUpperCase() ==
+                                              e.toString().toUpperCase()));
+                                    });
+                                  } else {
+                                    sites = snapshot.data!.docs;
+                                  }
 
-                  List<QueryDocumentSnapshot<Map<String, dynamic>>> sites = snapshot.data!.docs;
+                                  return AlertDialog(
+                                    title: Text("Filter Site"),
+                                    content: Container(
+                                      height: 550,
+                                      width: 400,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                20, 5, 20, 10),
+                                            height: 50,
+                                            child: Row(
+                                              spacing: 10,
+                                              children: [
+                                                Container(
+                                                  width: 180,
+                                                  child: TextField(
+                                                    controller: siteSearch,
+                                                    decoration: InputDecoration(
+                                                        hintText:
+                                                            'Search Site'),
+                                                    onChanged: (value) {
+                                                      print(value);
+                                                      sites = snapshot
+                                                          .data!.docs
+                                                          .where((e) => e
+                                                              .get('name')
+                                                              .toString()
+                                                              .toUpperCase()
+                                                              .contains(value
+                                                                  .toUpperCase()))
+                                                          .toList();
+                                                      setStateDialog(() {});
+                                                    },
+                                                  ),
+                                                ),
+                                                StatefulBuilder(
+                                                  builder: (BuildContext
+                                                          context,
+                                                      void Function(
+                                                              void Function())
+                                                          setStateType) {
+                                                    return TextButton(
+                                                        onPressed: () async {
+                                                          showDialog(
+                                                              context: context,
+                                                              builder: (_) =>
+                                                                  AlertDialog(
+                                                                    content:
+                                                                        StreamBuilder(
+                                                                      stream: widget
+                                                                          .userAccount
+                                                                          .collection(
+                                                                              'sitetypes')
+                                                                          .snapshots(),
+                                                                      builder:
+                                                                          (context,
+                                                                              snapshot) {
+                                                                        return Container(
+                                                                          height:
+                                                                              300,
+                                                                          width:
+                                                                              300,
+                                                                          child: snapshot.connectionState == ConnectionState.active
+                                                                              ? ListView.builder(
+                                                                                  itemCount: snapshot.data!.docs.length,
+                                                                                  itemBuilder: (context, i) {
+                                                                                    final type = snapshot.data!.docs[i];
+                                                                                    final name = type.get('name');
 
-                  if (typesFilter.isNotEmpty) {
-                    sites.clear();
-                    typesFilter.forEach((e) {
-                      sites.addAll(snapshot.data!.docs.where((x) => x.get('type').toString().toUpperCase() == e.toString().toUpperCase()));
-                    });
-                  } else {
-                    sites = snapshot.data!.docs;
-                  }
-
-                  return AlertDialog(
-                    title: Text("Filter Site"),
-                    content: Container(
-                      height: 550,
-                      width: 400,
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(20, 5, 20, 10),
-                            height: 50,
-                            child: Row(
-                              spacing: 10,
-                              children: [
-                                Container(
-                                  width: 180,
-                                  child: TextField(
-                                    controller: siteSearch,
-                                    decoration: InputDecoration(
-                                        hintText: 'Search Site'
-                                    ),
-                                    onChanged: (value) {
-                                      print(value);
-                                      sites = snapshot.data!.docs.where((e) => e.get('name').toString().toUpperCase().contains(value.toUpperCase())).toList();
-                                      setStateDialog((){
-
-                                      });
-                                    },
-                                  ),
-                                ),
-                                StatefulBuilder(
-                                  builder: (BuildContext context, void Function(void Function()) setStateType) {
-
-                                    return TextButton(onPressed: () async {
-                                      showDialog(context: context, builder: (_) => AlertDialog(
-                                        content: StreamBuilder(
-                                          stream: widget.userAccount.collection('sitetypes').snapshots(),
-                                          builder: (context, snapshot) {
-                                            return Container(
-                                              height: 300,
-                                              width: 300,
-                                              child: snapshot.connectionState == ConnectionState.active ? ListView.builder(
-                                                  itemCount: snapshot.data!.docs.length,
-                                                  itemBuilder: (context, i) {
-                                                    final type = snapshot.data!.docs[i];
-                                                    final name = type.get('name');
-
-                                                    return StatefulBuilder(
-                                                      builder: (BuildContext context, void Function(void Function()) setState) {
-                                                        return CheckboxListTile(
-                                                          title: Text(name),
-                                                          value: typesFilter.contains(name), onChanged: (bool? value) {
-                                                          if (value == true) {
-                                                            typesFilter.add(name);
-                                                          } else {
-                                                            typesFilter.remove(name);
-                                                          }
-                                                          setState((){
-
-                                                          });
+                                                                                    return StatefulBuilder(
+                                                                                      builder: (BuildContext context, void Function(void Function()) setState) {
+                                                                                        return CheckboxListTile(
+                                                                                          title: Text(name),
+                                                                                          value: typesFilter.contains(name),
+                                                                                          onChanged: (bool? value) {
+                                                                                            if (value == true) {
+                                                                                              typesFilter.add(name);
+                                                                                            } else {
+                                                                                              typesFilter.remove(name);
+                                                                                            }
+                                                                                            setState(() {});
+                                                                                          },
+                                                                                        );
+                                                                                      },
+                                                                                    );
+                                                                                  })
+                                                                              : loadWidget(50),
+                                                                        );
+                                                                      },
+                                                                    ),
+                                                                    actions: [
+                                                                      TextButton(
+                                                                          onPressed:
+                                                                              () {
+                                                                            if (typesFilter.isNotEmpty) {
+                                                                              displayType = "${typesFilter.length == 1 ? typesFilter[0] : "${typesFilter.length} Selected"}";
+                                                                              Navigator.pop(context);
+                                                                              setStateDialog(() {});
+                                                                            } else {
+                                                                              displayType = "All";
+                                                                              Navigator.pop(context);
+                                                                              setStateDialog(() {});
+                                                                            }
+                                                                          },
+                                                                          child:
+                                                                              Text("Confirm"))
+                                                                    ],
+                                                                  ));
                                                         },
-                                                        );
-                                                      },
-                                                    );
-                                                  }) : loadWidget(50),
-                                            );
+                                                        child: Text(
+                                                            "Type: $displayType"));
+                                                  },
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            height: 400,
+                                            width: 400,
+                                            child: ListView.builder(
+                                                itemCount: sites.length,
+                                                itemBuilder: (context, i) {
+                                                  final name =
+                                                      sites[i].get('name');
+                                                  final type =
+                                                      sites[i].get('type');
+
+                                                  return StatefulBuilder(
+                                                    builder: (BuildContext
+                                                            context,
+                                                        void Function(
+                                                                void Function())
+                                                            setState) {
+                                                      return CheckboxListTile(
+                                                        title: Text(
+                                                            "$name ($type)"),
+                                                        value: sitesFilter
+                                                            .contains(name),
+                                                        onChanged:
+                                                            (bool? newValue) {
+                                                          if (newValue ==
+                                                              true) {
+                                                            sitesFilter
+                                                                .add(name);
+                                                          } else {
+                                                            sitesFilter
+                                                                .remove(name);
+                                                          }
+                                                          setState(() {});
+                                                        },
+                                                      );
+                                                    },
+                                                  );
+                                                }),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            sitesFilter.clear();
+                                            setStateDialog(() {});
                                           },
-                                        ),
-                                        actions: [
+                                          child: Text("Clear")),
+                                      TextButton(
+                                          onPressed: () {
+                                            showDialog(
+                                                context: context,
+                                                builder: (_) => AlertDialog(
+                                                      content: StreamBuilder(
+                                                        stream: widget
+                                                            .userAccount
+                                                            .collection(
+                                                                'sitetypes')
+                                                            .snapshots(),
+                                                        builder: (context,
+                                                            snapshot) {
+                                                          return Container(
+                                                            height: 300,
+                                                            width: 300,
+                                                            child: snapshot
+                                                                        .connectionState ==
+                                                                    ConnectionState
+                                                                        .active
+                                                                ? ListView
+                                                                    .builder(
+                                                                        itemCount: snapshot
+                                                                            .data!
+                                                                            .docs
+                                                                            .length,
+                                                                        itemBuilder:
+                                                                            (context,
+                                                                                i) {
+                                                                          final type = snapshot
+                                                                              .data!
+                                                                              .docs[i];
+                                                                          final name =
+                                                                              type.get('name');
 
-                                          TextButton(onPressed: () {
-                                          if (typesFilter.isNotEmpty) {
-                                            displayType = "${typesFilter.length == 1 ? typesFilter[0] : "${typesFilter.length} Selected"}";
+                                                                          return StatefulBuilder(
+                                                                            builder:
+                                                                                (BuildContext context, void Function(void Function()) setState) {
+                                                                              return ListTile(
+                                                                                onTap: () {
+                                                                                  displaySite = "$name";
+                                                                                  Navigator.pop(context);
+                                                                                  Navigator.pop(context);
+                                                                                  setStateButton(() {});
+                                                                                },
+                                                                                title: Text(name),
+                                                                              );
+                                                                            },
+                                                                          );
+                                                                        })
+                                                                : loadWidget(
+                                                                    50),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ));
+                                            displaySite = 'All Type';
+                                            sitesFilter.clear();
+                                            setStateButton(() {});
+                                          },
+                                          child: Text("All Type")),
+                                      TextButton(
+                                          onPressed: () {
+                                            displaySite = 'All';
+                                            sitesFilter.clear();
                                             Navigator.pop(context);
-                                            setStateDialog((){
-
-                                            });
-                                          } else {
-                                            displayType = "All";
-                                            Navigator.pop(context);
-                                            setStateDialog((){
-
-                                            });
-
-                                          }
-                                        }, child: Text("Confirm"))],
-                                      ));
-
-                                    }, child: Text("Type: $displayType"));
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                          Container(
-                            height: 400,
-                            width: 400,
-                            child: ListView.builder(
-                                itemCount: sites.length,
-                                itemBuilder: (context, i) {
-
-                                  final name = sites[i].get('name');
-                                  final type = sites[i].get('type');
-
-                                  return StatefulBuilder(
-                                    builder: (BuildContext context, void Function(void Function()) setState) {
-                                      return CheckboxListTile(
-                                        title: Text("$name ($type)"),
-                                        value: sitesFilter.contains(name),
-                                        onChanged: (bool? newValue) {
-                                          if (newValue == true) {
-                                            sitesFilter.add(name);
-                                          } else {
-                                            sitesFilter.remove(name);
-                                          }
-                                          setState((){});
-                                        },
-                                      );
-                                    },
+                                            setStateButton(() {});
+                                          },
+                                          child: Text("Select All")),
+                                      TextButton(
+                                          onPressed: () {
+                                            if (sitesFilter.isNotEmpty) {
+                                              displaySite =
+                                                  '${sitesFilter.length == 1 ? sitesFilter[0] : "${sitesFilter.length} Selected"}';
+                                              Navigator.pop(context);
+                                              setStateButton(() {});
+                                            }
+                                          },
+                                          child: Text("Filter"))
+                                    ],
                                   );
-                                }),
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      TextButton(onPressed: () {
-                        sitesFilter.clear();
-                        setStateDialog((){
-
-                        });
-
-                      }, child: Text("Clear")),
-
-                      TextButton(onPressed: () {
-                        displaySite = 'All';
-                        Navigator.pop(context);
-                        setStateButton((){
-
-                        });
-
-                      }, child: Text("Select All")),
-                      TextButton(onPressed: () {
-                        if (sitesFilter.isNotEmpty) {
-                          displaySite = '${sitesFilter.length == 1 ? sitesFilter[0] : "${sitesFilter.length} Selected"}';
-                          Navigator.pop(context);
-                          setStateButton((){
-                          });
-                        }
-                      }, child: Text("Confirm Selected"))
-                    ],
+                                },
+                              ));
+                    },
+                    child: Text("Site: ${displaySite}"),
                   );
                 },
-              ));
-            }, child: Text("Site: ${displaySite}"),
-
-            );
-          },
-        ) : Container();
+              )
+            : Container();
       },
     );
   }
-
 }
