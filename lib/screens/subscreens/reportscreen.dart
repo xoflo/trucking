@@ -33,6 +33,9 @@ class _ReportScreenState extends State<ReportScreen> {
   List<String> sitesFilter = [];
   List<String> typesFilter = [];
 
+  List<String> displaySortBy = ["Driver", "Site", "Date"];
+  int displaySortByIndex = 0;
+
   Timestamp? timestampLoad;
   Timestamp? timestampReceive;
 
@@ -57,6 +60,18 @@ class _ReportScreenState extends State<ReportScreen> {
                         driverSelectButton(),
                         siteSelectButton(),
 
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            return TextButton(onPressed: () {
+                              if (displaySortByIndex == displaySortBy.length - 1) {
+                                displaySortByIndex = 0;
+                              } else {
+                                displaySortByIndex += 1;
+                              }
+                              setState((){});
+                            }, child: Text("Sort by: ${displaySortBy[displaySortByIndex]}"));
+                          },
+                        ),
                         IconButton(
                             tooltip: 'Filter Results',
                             onPressed: () {
@@ -82,6 +97,8 @@ class _ReportScreenState extends State<ReportScreen> {
 
   sortResults(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
 
+    final sortBy = displaySortBy[displaySortByIndex].toLowerCase();
+
     final realDocs = docs;
     List<QueryDocumentSnapshot<dynamic>> newResultDrive = [];
     List<QueryDocumentSnapshot<dynamic>> newResultSite = [];
@@ -93,6 +110,8 @@ class _ReportScreenState extends State<ReportScreen> {
     for (int i = 0; i < sitesFilter.length; i++) {
       newResultSite.addAll(newResultDrive.where((e) => e.get('site') == sitesFilter[i]).toList());
     }
+
+    newResultSite.where((e) => e.get(sortBy) == )
 
     return newResultSite.toSet().toList();;
 
@@ -113,11 +132,10 @@ class _ReportScreenState extends State<ReportScreen> {
                 return snapshot.connectionState == ConnectionState.done ? snapshot.data!.length != 0 ? ListView.builder(
                     itemCount:  snapshot.data!.length,
                     itemBuilder: (context, i) {
-                      final ticket =  Ticket.fromFirebase(snapshot.data![i]);
+                      final ticket =  snapshot.data![i];
 
                       return ListTile(
-                        title: Text(ticket.date!),
-                        subtitle: Text("${ticket.date} | ${ticket.site}"),
+                        title: Text(ticket.get()),
                         onTap: () {
                           showDialog(context: context, builder: (_) => AlertDialog(
                             content: Container(
@@ -127,7 +145,9 @@ class _ReportScreenState extends State<ReportScreen> {
                           ));
                         },
                       );
-                    }): Text("No results found", style: TextStyle(color: Colors.grey)) : loadWidget(100);
+                    }): loadWidget(100) : Center(
+                  child: Text("No results found", style: TextStyle(color: Colors.grey)),
+                );
               },
             ) : loadWidget(100);
           }
