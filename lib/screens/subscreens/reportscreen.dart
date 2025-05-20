@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:trucking/screens/mainpage.dart';
 import 'package:async/async.dart';
 
+import '../../models/ticket.dart';
+
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key, required this.userAccount});
 
@@ -30,9 +32,6 @@ class _ReportScreenState extends State<ReportScreen> {
   List<String> driversFilter = [];
   List<String> sitesFilter = [];
   List<String> typesFilter = [];
-
-  List<String> displaySortBy = ["Driver", "Site", "Date"];
-  int displaySortByIndex = 0;
 
   Timestamp? timestampLoad;
   Timestamp? timestampReceive;
@@ -58,18 +57,6 @@ class _ReportScreenState extends State<ReportScreen> {
                         driverSelectButton(),
                         siteSelectButton(),
 
-                        StatefulBuilder(
-                          builder: (context, setState) {
-                            return TextButton(onPressed: () {
-                              if (displaySortByIndex == displaySortBy.length - 1) {
-                                displaySortByIndex = 0;
-                              } else {
-                                displaySortByIndex += 1;
-                              }
-                              setState((){});
-                            }, child: Text("Sort by: ${displaySortBy[displaySortByIndex]}"));
-                          },
-                        ),
                         IconButton(
                             tooltip: 'Filter Results',
                             onPressed: () {
@@ -122,14 +109,15 @@ class _ReportScreenState extends State<ReportScreen> {
           builder: (context, snapshot) {
             return snapshot.connectionState == ConnectionState.active ?  FutureBuilder(
               future: sortResults(snapshot.data!.docs),
-              builder: (BuildContext context, AsyncSnapshot<List<QueryDocumentSnapshot>> snapshot) {
-                return snapshot.connectionState == ConnectionState.done ? ListView.builder(
+              builder: (BuildContext context, AsyncSnapshot<List<QueryDocumentSnapshot<Map<String, dynamic>>>> snapshot) {
+                return snapshot.connectionState == ConnectionState.done ? snapshot.data!.length != 0 ? ListView.builder(
                     itemCount:  snapshot.data!.length,
                     itemBuilder: (context, i) {
-                      final ticket =  snapshot.data![i];
+                      final ticket =  Ticket.fromFirebase(snapshot.data![i]);
 
                       return ListTile(
-                        title: Text(ticket.get(displaySortBy[displaySortByIndex].toLowerCase())),
+                        title: Text(ticket.date!),
+                        subtitle: Text("${ticket.date} | ${ticket.site}"),
                         onTap: () {
                           showDialog(context: context, builder: (_) => AlertDialog(
                             content: Container(
@@ -139,11 +127,9 @@ class _ReportScreenState extends State<ReportScreen> {
                           ));
                         },
                       );
-                    }): loadWidget(100);
+                    }): Text("No results found", style: TextStyle(color: Colors.grey)) : loadWidget(100);
               },
-            ) : Center(
-              child: Text("No results found", style: TextStyle(color: Colors.grey)),
-            );
+            ) : loadWidget(100);
           }
         ) : Center(
           child: Text("Complete Filter Values", style: TextStyle(color: Colors.grey)),
