@@ -24,10 +24,11 @@ class Ticket {
 
   double? driverIncentiveRate;
   double? siteDistance;
+  double? total;
 
   Ticket(this.epdc, this.mmdc, this.date, this.loadedBy, this.timeLoaded, this.loadChecker, this.loadOperator, this.hauledBy,
       this.driver, this.receivedBy, this.timeReceived, this.receiveOperator, this.receiveChecker,
-      this.material, this.activity, this.site, this.destination, {this.driverIncentiveRate, this.siteDistance});
+      this.material, this.activity, this.site, this.destination, {this.driverIncentiveRate, this.siteDistance, this.total});
 
   toFirebase(DocumentReference<Map<String, dynamic>> userAccount) async {
     await userAccount.collection('tickets').add({
@@ -50,6 +51,7 @@ class Ticket {
       'destination': this.destination,
       'driverIncentiveRate': this.driverIncentiveRate,
       'siteDistance': this.siteDistance,
+      'total': this.total,
     });
 
     return 1;
@@ -73,5 +75,8 @@ class Ticket {
     this.activity= data.get('activity');
     this.site = data.get('site');
     this.destination = data.get('destination');
+    this.destination = data.get('incentiveRate');
+    this.destination = data.get('siteDistance');
+    this.destination = data.get('total');
   }
 }
