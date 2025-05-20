@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -148,10 +149,11 @@ class _SiteScreenState extends State<SiteScreen> {
                     color: Colors.orange,
                     Icons.check_circle),
                 onPressed: () {
-                  if (i == 2) {
-
-                  } else {
+                  try {
+                    double.parse(siteDistance.text);
                     siteToFirebase();
+                  } catch(e) {
+                    print(e);
                   }
                 })
           ],
