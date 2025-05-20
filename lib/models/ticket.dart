@@ -75,8 +75,8 @@ class Ticket {
     this.activity= data.get('activity');
     this.site = data.get('site');
     this.destination = data.get('destination');
-    this.destination = data.get('incentiveRate');
-    this.destination = data.get('siteDistance');
-    this.destination = data.get('total');
+    this.driverIncentiveRate = data.get('driverIncentiveRate');
+    this.siteDistance = data.get('siteDistance');
+    this.total = data.get('total');
   }
 }

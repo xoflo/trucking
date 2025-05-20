@@ -482,7 +482,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     siteName,
                     destination.text,
                     driverIncentiveRate: driverIncentiveRate,
-                    siteDistance: siteDistance
+                    siteDistance: siteDistance,
+                    total: driverIncentiveRate * siteDistance
                 )
                     .toFirebase(widget.userAccount);
 

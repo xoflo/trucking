@@ -103,12 +103,20 @@ class _ReportScreenState extends State<ReportScreen> {
 
     List<List<QueryDocumentSnapshot<dynamic>>> newResultFR = [];
 
-    for (int i = 0; i < driversFilter.length; i++) {
-      newResultDrive.addAll(docs.where((e) => e.get('driver') == driversFilter[i]).toList());
+    if (displayDriver == 'All') {
+      newResultDrive = docs;
+    } else {
+      for (int i = 0; i < driversFilter.length; i++) {
+        newResultDrive.addAll(docs.where((e) => e.get('driver') == driversFilter[i]).toList());
+      }
     }
 
-    for (int i = 0; i < sitesFilter.length; i++) {
-      newResultSite.addAll(newResultDrive.where((e) => e.get('site') == sitesFilter[i]).toList());
+    if (displaySite == 'All') {
+      newResultSite.addAll(newResultDrive);
+    } else {
+      for (int i = 0; i < sitesFilter.length; i++) {
+        newResultSite.addAll(newResultDrive.where((e) => e.get('site') == sitesFilter[i]).toList());
+      }
     }
 
     if (displaySortByIndex == 0) {
@@ -191,7 +199,7 @@ class _ReportScreenState extends State<ReportScreen> {
                                   ],
                                 ),
                                 content: SizedBox(
-                                  height: 380,
+                                  height: 450,
                                   width: 400,
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,8 +223,8 @@ class _ReportScreenState extends State<ReportScreen> {
                                       Text("Destination: ${ticket.destination}"),
                                       Divider(),
                                       Text("Driver Incentive Rate: P${ticket.driverIncentiveRate}"),
-                                      Text("Site Distance: P${ticket.siteDistance}"),
-                                      Text("Total: P${ticket.siteDistance}"),
+                                      Text("Site Distance: ${ticket.siteDistance}km"),
+                                      Text("Total: P${ticket.total}"),
                                     ],
                                   ),
                                 ),
@@ -376,6 +384,14 @@ class _ReportScreenState extends State<ReportScreen> {
                       ),
                     ),
                     actions: [
+
+                      TextButton(onPressed: () {
+                        driversFilter.clear();
+                        setState((){
+
+                        });
+
+                      }, child: Text("Clear")),
 
                       TextButton(onPressed: () {
                         displayDriver = 'All';
@@ -556,6 +572,13 @@ class _ReportScreenState extends State<ReportScreen> {
                       ),
                     ),
                     actions: [
+                      TextButton(onPressed: () {
+                        sitesFilter.clear();
+                        setStateDialog((){
+
+                        });
+
+                      }, child: Text("Clear")),
 
                       TextButton(onPressed: () {
                         displaySite = 'All';
